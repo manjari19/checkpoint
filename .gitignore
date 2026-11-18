@@ -1,0 +1,12 @@
+# Build output
+target/
+node_modules/
+dist/
+.angular/
+
+# Local settings and secrets
+.env
+*.iml
+.idea/
+.vscode/
+.DS_Store

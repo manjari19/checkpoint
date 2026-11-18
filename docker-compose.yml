@@ -1,0 +1,55 @@
+# Starts the whole stack: docker compose up --build
+#
+# Host ports are chosen not to clash with other local projects
+# (which may use 5432, 6379, 8000 and 8080).
+#   API + Swagger UI   http://localhost:8180/swagger-ui.html
+#   Mailpit inbox      http://localhost:8025
+#   PostgreSQL         localhost:5442 (user/password/db: checkpoint)
+
+name: checkpoint
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: checkpoint
+      POSTGRES_USER: checkpoint
+      POSTGRES_PASSWORD: checkpoint
+    ports:
+      - "5442:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U checkpoint -d checkpoint"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Catches every email the app sends so nothing reaches a real inbox.
+  mailpit:
+    image: axllent/mailpit:v1.34
+    ports:
+      - "8025:8025"
+
+  api:
+    build: ./backend
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/checkpoint
+      DB_USER: checkpoint
+      DB_PASSWORD: checkpoint
+      MAIL_HOST: mailpit
+      MAIL_PORT: 1025
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:4300}
+      CARD_HASH_KEY: ${CARD_HASH_KEY:-dev-only-card-hash-key-change-me}
+      BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-organizer@checkpoint.local}
+      BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:-checkpoint-demo}
+    ports:
+      - "8180:8180"
+    depends_on:
+      db:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+
+volumes:
+  db-data:
