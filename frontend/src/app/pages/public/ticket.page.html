@@ -1,0 +1,109 @@
+<main class="page vt-page">
+
+  @if (ticket.error()) {
+    <section class="missing">
+      <app-doodle name="search" />
+      <h1>Ticket not <span class="accent">found</span>.</h1>
+      <p class="muted">Check that you opened the full link from your confirmation email.</p>
+    </section>
+  } @else if (ticket.value(); as t) {
+    <header class="intro">
+      <app-doodle [name]="t.status === 'WAITLISTED' ? 'calendar' : t.checkedInAt ? 'people' : 'door'" />
+      @switch (t.status) {
+        @case ('CONFIRMED') {
+          @if (t.checkedInAt) {
+            <h1>You're <span class="accent">in</span>. Enjoy!</h1>
+          } @else {
+            <h1>See you at the <span class="accent">door</span>.</h1>
+          }
+        }
+        @case ('WAITLISTED') { <h1>You're on the <span class="accent">waitlist</span>.</h1> }
+        @case ('CANCELLED') { <h1>RSVP <span class="accent">cancelled</span>.</h1> }
+      }
+    </header>
+
+    <div class="tilt-zone" (pointermove)="onPointerMove($event)" (pointerleave)="resetTilt()">
+      <article class="ticket" [class.used]="t.checkedInAt" [class.cancelled]="t.status === 'CANCELLED'"
+               [style.transform]="tiltTransform()" [attr.aria-label]="'Ticket for ' + t.eventTitle" animate.enter="rise">
+        <div class="stub-top">
+          <p class="kicker">{{ t.status === 'WAITLISTED' ? 'On the waitlist' : 'Admit one' }}</p>
+          <h2><app-accent-title [text]="t.eventTitle" /></h2>
+          <dl class="labels">
+            <div><dt>Date</dt><dd>{{ formatDate(t.eventStartsAt) }}</dd></div>
+            <div><dt>Time</dt><dd>{{ formatTimeRange(t.eventStartsAt, t.eventEndsAt) }}</dd></div>
+            <div class="wide"><dt>Location</dt><dd>{{ t.eventLocation }}</dd></div>
+          </dl>
+        </div>
+
+        <div class="stub-bottom">
+          @switch (t.status) {
+            @case ('CONFIRMED') {
+              <div class="qr-wrap">
+                <app-qr-code class="qr" [value]="t.ticketCode!" [label]="'QR code for ' + t.attendeeName + '’s ticket'" />
+                @if (t.checkedInAt) {
+                  <div class="stamp" role="status">Checked in<small>{{ formatTime(t.checkedInAt) }}</small></div>
+                }
+              </div>
+              <div class="holder">
+                <span class="kicker">Attendee</span>
+                <strong>{{ t.attendeeName }}</strong>
+                @if (t.checkedInAt) {
+                  <span class="small">You're checked in. Enjoy the event!</span>
+                } @else {
+                  <span class="small">Show this at the door.@if (t.cardLinked) { Or scan your linked student card. }</span>
+                }
+              </div>
+            }
+            @case ('WAITLISTED') {
+              <div class="position">
+                <span class="kicker">In line</span>
+                <strong>#<app-count-up [value]="t.waitlistPosition" [startAtValue]="true" /></strong>
+              </div>
+              <div class="holder">
+                <strong>{{ t.attendeeName }}</strong>
+                <span class="small">If someone cancels, you move up automatically and we email your QR code.</span>
+              </div>
+            }
+            @case ('CANCELLED') {
+              <div class="cancelled-label" role="status">Cancelled</div>
+              <div class="holder">
+                <strong>{{ t.attendeeName }}</strong>
+                <span class="small">This RSVP is cancelled.</span>
+              </div>
+            }
+          }
+          <span class="strip" aria-hidden="true">{{ t.status === 'WAITLISTED' ? 'Waitlist' : 'Checkpoint' }}</span>
+        </div>
+      </article>
+    </div>
+
+    @if (error()) {
+      <p class="alert" role="alert">{{ error() }}</p>
+    }
+
+    @if (t.cancellable) {
+      @if (!confirming()) {
+        <button type="button" class="btn btn-block" (click)="confirming.set(true)">Can't make it? Cancel RSVP</button>
+      } @else {
+        <section class="card confirm" role="alertdialog" aria-labelledby="confirm-title" animate.enter="pop">
+          <h2 id="confirm-title">Cancel your RSVP?</h2>
+          <p class="muted">
+            @if (t.status === 'CONFIRMED') { Your seat goes to the next person on the waitlist. You can't undo this, but you can RSVP again if there's room. }
+            @else { You'll leave the waitlist. }
+          </p>
+          <div class="confirm-buttons">
+            <button type="button" class="btn" (click)="confirming.set(false)" [disabled]="cancelling()">Keep my spot</button>
+            <button type="button" class="btn btn-danger" (click)="cancel()" [disabled]="cancelling()">
+              {{ cancelling() ? 'Cancelling…' : 'Yes, cancel' }}
+            </button>
+          </div>
+        </section>
+      }
+    }
+    @if (t.status === 'CANCELLED') {
+      <a class="btn btn-block" [routerLink]="['/e', t.eventId]">RSVP again <app-icon class="arrow" name="arrow-right" [size]="17" /></a>
+    }
+  } @else {
+    <app-skeleton shape="ticket" />
+  }
+</main>

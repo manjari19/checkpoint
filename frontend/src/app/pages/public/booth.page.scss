@@ -1,0 +1,172 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  background: radial-gradient(70% 40% at 50% 0%, rgba(139, 92, 246, 0.16), transparent 70%), var(--bg);
+}
+
+.page {
+  display: grid;
+  gap: 16px;
+  width: min(560px, 100%);
+  margin: 0 auto;
+  padding: 24px 16px 40px;
+}
+
+.head {
+  display: grid;
+  gap: 4px;
+
+  h1 {
+    font-size: 1.9rem;
+    font-weight: 540;
+    overflow-wrap: anywhere;
+  }
+}
+
+.camera {
+  height: min(52vh, 380px);
+  border-radius: 22px;
+  border: 1px solid var(--border-strong);
+}
+
+.result {
+  min-height: 84px;
+  display: grid;
+}
+
+.hint {
+  align-self: center;
+  text-align: center;
+  color: var(--muted);
+}
+
+.result-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  border-radius: 20px;
+
+  &.success {
+    background: #15803d;
+    color: #fff;
+  }
+
+  &.warning {
+    background: #f5b83d;
+    color: #17132a;
+  }
+
+  &.danger {
+    background: #b91c1c;
+    color: #fff;
+  }
+
+  &.shake {
+    animation: shake 360ms ease-in-out 180ms both;
+  }
+}
+
+.result-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  flex: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.result-text {
+  display: grid;
+  min-width: 0;
+
+  strong {
+    font-family: var(--font-serif);
+    font-size: 1.35rem;
+    font-weight: 560;
+    overflow-wrap: anywhere;
+  }
+
+  span {
+    overflow-wrap: anywhere;
+  }
+}
+
+.manual {
+  display: flex;
+  gap: 10px;
+
+  .input {
+    flex: 1;
+    min-width: 0;
+    border-radius: 999px;
+  }
+}
+
+.leads-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.count {
+  display: grid;
+  place-items: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--purple-soft);
+  color: var(--purple-text);
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.leads {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-top: 1px solid var(--border);
+
+    &:first-child {
+      border-top: 0;
+    }
+  }
+}
+
+.who {
+  display: grid;
+  min-width: 0;
+
+  a {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.875rem;
+  }
+}
+
+.time {
+  flex: none;
+  font-size: 0.8rem;
+}
+
+.missing {
+  display: grid;
+  gap: 12px;
+  padding: 80px 0;
+  text-align: center;
+
+  h1 {
+    font-size: 2rem;
+  }
+}

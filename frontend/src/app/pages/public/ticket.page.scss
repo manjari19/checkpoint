@@ -1,0 +1,354 @@
+// A paper ticket on the dark page: two halves with half-circle notches where they meet, a dashed tear
+// line, and a gold strip on the stub. The notches are CSS masks, so they are truly see-through.
+// Paper colors: ink #1b1630 on #eeebf5 is 14.8:1, labels #5b5374 are 6.1:1, purple #6d4ae8 is 4.7:1.
+
+:host {
+  display: block;
+  min-height: 100vh;
+  overflow-x: clip;
+  background:
+    radial-gradient(70% 40% at 50% 0%, rgba(139, 92, 246, 0.2), transparent 70%),
+    var(--bg);
+}
+
+.page {
+  position: relative;
+  display: grid;
+  gap: 16px;
+  width: min(420px, 100%);
+  margin: 0 auto;
+  padding: 28px 16px 40px;
+
+  > *:not(app-sparkle-field) {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+.intro {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  app-doodle {
+    --doodle-width: 64px;
+    flex: none;
+  }
+
+  h1 {
+    font-size: clamp(1.6rem, 1.3rem + 1.6vw, 2rem);
+    font-weight: 520;
+  }
+}
+
+.tilt-zone {
+  padding: 4px;
+  margin: -4px;
+}
+
+.ticket {
+  --notch: 13px;
+  --paper: #eeebf5;
+  --ink: #1b1630;
+  --label: #5b5374;
+  position: relative;
+  display: grid;
+  color: var(--ink);
+  // drop-shadow (unlike box-shadow) follows the cut-out shape.
+  filter: drop-shadow(0 22px 34px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 40px rgba(139, 92, 246, 0.18));
+  transition: transform var(--dur) var(--ease), filter var(--dur-slow);
+  transform-style: preserve-3d;
+}
+
+.kicker {
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #6d4ae8;
+}
+
+.stub-top,
+.stub-bottom {
+  background: var(--paper);
+  transition: background-color var(--dur-slow), color var(--dur-slow), transform var(--dur-slow) var(--ease);
+}
+
+.stub-top {
+  display: grid;
+  gap: 12px;
+  padding: 22px 22px 22px;
+  border-radius: 20px 20px 0 0;
+  -webkit-mask: radial-gradient(circle at 0 100%, transparent var(--notch), #000 calc(var(--notch) + 0.5px)) left / 51% 100% no-repeat,
+    radial-gradient(circle at 100% 100%, transparent var(--notch), #000 calc(var(--notch) + 0.5px)) right / 51% 100% no-repeat;
+  mask: radial-gradient(circle at 0 100%, transparent var(--notch), #000 calc(var(--notch) + 0.5px)) left / 51% 100% no-repeat,
+    radial-gradient(circle at 100% 100%, transparent var(--notch), #000 calc(var(--notch) + 0.5px)) right / 51% 100% no-repeat;
+
+  h2 {
+    font-size: clamp(1.6rem, 1.3rem + 1.6vw, 2rem);
+    font-weight: 600;
+    line-height: 1.16;
+    overflow-wrap: anywhere;
+  }
+
+  // Dark ink headline on paper: the accent word stays purple but darker for contrast.
+  ::ng-deep .accent {
+    color: #6d4ae8;
+  }
+}
+
+.labels {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 16px;
+  margin: 0;
+
+  div {
+    min-width: 0;
+  }
+
+  .wide {
+    grid-column: 1 / -1;
+  }
+
+  dt {
+    font-size: 0.72rem;
+    color: var(--label);
+  }
+
+  dd {
+    margin: 1px 0 0;
+    font-weight: 650;
+    overflow-wrap: anywhere;
+  }
+}
+
+.stub-bottom {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 22px 56px 22px 22px;
+  border-radius: 0 0 20px 20px;
+  transform-origin: 0 0;
+  -webkit-mask: radial-gradient(circle at 0 0, transparent var(--notch), #000 calc(var(--notch) + 0.5px)) left / 51% 100% no-repeat,
+    radial-gradient(circle at 100% 0, transparent var(--notch), #000 calc(var(--notch) + 0.5px)) right / 51% 100% no-repeat;
+  mask: radial-gradient(circle at 0 0, transparent var(--notch), #000 calc(var(--notch) + 0.5px)) left / 51% 100% no-repeat,
+    radial-gradient(circle at 100% 0, transparent var(--notch), #000 calc(var(--notch) + 0.5px)) right / 51% 100% no-repeat;
+
+  // The dashed tear line, running between the two notches.
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: calc(var(--notch) + 6px);
+    right: calc(var(--notch) + 6px);
+    border-top: 2.5px dashed rgba(27, 22, 48, 0.35);
+  }
+}
+
+// A vertical gold strip on the stub, like the "VIP" band in the reference.
+.strip {
+  position: absolute;
+  top: 18px;
+  right: 14px;
+  bottom: 18px;
+  width: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--gold);
+  color: #17132a;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  writing-mode: vertical-rl;
+}
+
+.qr-wrap {
+  position: relative;
+  flex: none;
+}
+
+.qr {
+  width: 140px;
+}
+
+.holder {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+
+  strong {
+    font-family: var(--font-serif);
+    font-size: 1.35rem;
+    font-weight: 600;
+    line-height: 1.1;
+    overflow-wrap: anywhere;
+  }
+}
+
+.small {
+  font-size: 0.8125rem;
+  color: var(--label);
+}
+
+.position {
+  display: grid;
+  justify-items: center;
+  width: 110px;
+  flex: none;
+  padding: 12px 0;
+  border-radius: 16px;
+  background: #fbe9c2;
+  box-shadow: inset 0 0 0 1px rgba(166, 110, 0, 0.35);
+
+  .kicker {
+    color: #7a5200;
+  }
+
+  strong {
+    font-family: var(--font-serif);
+    font-size: 2.5rem;
+    line-height: 1;
+    color: #5c3d00;
+  }
+}
+
+// After check-in (or cancelling) the paper turns a muted purple-grey and the stub tilts as if torn off.
+// A checked-in ticket gets a stamp over its QR code, which is used up by then.
+.ticket.used,
+.ticket.cancelled {
+  --paper: #3a3452;
+  --ink: #e4def5;
+  --label: #c4bcdd;
+
+  .kicker {
+    color: #c4bcdd;
+  }
+
+  .stub-top ::ng-deep .accent {
+    color: #d4c6ff;
+  }
+
+  .stub-bottom::before {
+    border-top-color: rgba(228, 222, 245, 0.35);
+  }
+
+  .qr {
+    opacity: 0.35;
+  }
+
+  .strip {
+    opacity: 0.55;
+  }
+}
+
+.ticket.used .stub-bottom {
+  transform: translate(6px, 8px) rotate(3deg);
+}
+
+.stamp {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  justify-items: center;
+  max-width: 150px;
+  padding: 5px 10px;
+  white-space: nowrap;
+  border: 3px solid #f4f2fa;
+  border-radius: 10px;
+  color: #fff;
+  background: rgba(23, 19, 42, 0.7);
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transform: translate(-50%, -50%) rotate(-8deg);
+  // The stamp lands: drops in big and tilted, overshoots a little, then settles.
+  animation: stamp 300ms cubic-bezier(0.3, 1.4, 0.5, 1) 120ms both;
+
+  small {
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+  }
+}
+
+@keyframes stamp {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(-20deg) scale(1.8);
+  }
+  60% {
+    opacity: 1;
+  }
+}
+
+.cancelled-label {
+  flex: none;
+  padding: 8px 12px;
+  border: 3px solid currentColor;
+  border-radius: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transform: rotate(-6deg);
+}
+
+.confirm {
+  display: grid;
+  gap: 8px;
+}
+
+.confirm-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 6px;
+
+  .btn {
+    flex: 1 1 140px;
+  }
+}
+
+.missing {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: 60px 0;
+  text-align: center;
+
+  app-doodle {
+    --doodle-width: 110px;
+  }
+
+  h1 {
+    font-size: 2.1rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .stub-top {
+    padding: 20px 18px;
+  }
+
+  .stub-bottom {
+    gap: 12px;
+    padding: 20px 50px 20px 18px;
+  }
+
+  .strip {
+    right: 12px;
+    width: 26px;
+  }
+
+  .qr {
+    width: 118px;
+  }
+
+  .position {
+    width: 92px;
+  }
+}

@@ -1,0 +1,245 @@
+// Phone-first: the whole screen is the scanner. Camera on top, result card below it, never on top of it.
+:host {
+  display: block;
+  background:
+    radial-gradient(80% 50% at 50% 0%, rgba(139, 92, 246, 0.14), transparent 70%),
+    var(--bg);
+}
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100vh;
+  height: 100dvh;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: max(12px, env(safe-area-inset-top)) 16px max(12px, env(safe-area-inset-bottom));
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+}
+
+.event {
+  min-width: 0;
+  flex: 1;
+}
+
+.picker {
+  width: 100%;
+  min-height: 38px;
+  padding: 4px 28px 4px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  text-overflow: ellipsis;
+}
+
+.title {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+}
+
+// Checked-in counter, counting up with each arrival.
+.count {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  flex: none;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(74, 222, 128, 0.1);
+  border: 1px solid rgba(74, 222, 128, 0.3);
+  color: var(--muted);
+  font-size: 0.8125rem;
+
+  strong {
+    color: var(--success);
+    font-size: 1.05rem;
+  }
+}
+
+.mode {
+  flex: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 100%;
+
+  button {
+    min-height: 44px;
+    font-size: 0.95rem;
+  }
+}
+
+.camera {
+  flex: 1 1 auto;
+  min-height: 200px;
+  border-radius: 22px;
+  border: 1px solid var(--border-strong);
+  box-shadow: 0 20px 50px -20px rgba(139, 92, 246, 0.35);
+}
+
+.result {
+  flex: none;
+  min-height: 100px;
+  display: grid;
+}
+
+.hint {
+  align-self: center;
+  text-align: center;
+  color: var(--muted);
+  font-size: 1rem;
+}
+
+.result-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  overflow: hidden;
+  border-radius: 20px;
+
+  // Solid colors, readable at arm's length. Contrast: white on green 5.0, ink on amber 10.4, white on red 6.5.
+  &.success {
+    background: #15803d;
+    color: #fff;
+  }
+
+  &.warning {
+    background: #f5b83d;
+    color: #17132a;
+  }
+
+  &.danger {
+    background: #b91c1c;
+    color: #fff;
+  }
+
+  // Already checked in: a gentle shake after it pops in.
+  &.shake {
+    animation: shake 360ms ease-in-out 180ms both;
+  }
+}
+
+.result-icon {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  flex: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+// The green check draws itself.
+.draw {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: draw-check 300ms var(--ease) 120ms forwards;
+}
+
+@keyframes draw-check {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.result-text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+
+  strong {
+    font-family: var(--font-serif);
+    font-size: 1.55rem;
+    font-weight: 560;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+  }
+
+  span {
+    font-size: 0.95rem;
+    opacity: 0.92;
+    overflow-wrap: anywhere;
+  }
+}
+
+// A thin bar along the bottom that empties until the card goes away by itself.
+.timer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 4px;
+  background: currentColor;
+  opacity: 0.35;
+  transform-origin: left;
+  animation: drain linear both;
+}
+
+@keyframes drain {
+  to {
+    transform: scaleX(0);
+  }
+}
+
+.manual {
+  flex: none;
+
+  form {
+    display: flex;
+    gap: 10px;
+
+    .input {
+      flex: 1;
+      min-width: 0;
+      min-height: 48px;
+      border-radius: 999px;
+      font-size: 1rem;
+    }
+  }
+}
+
+.no-event {
+  display: grid;
+  justify-items: center;
+  gap: 16px;
+  margin: auto;
+  text-align: center;
+  color: var(--muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .draw {
+    stroke-dashoffset: 0;
+  }
+
+  .timer {
+    display: none;
+  }
+}
+
+@media (min-width: 900px) {
+  .screen {
+    padding-top: 24px;
+    padding-bottom: 24px;
+  }
+}

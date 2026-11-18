@@ -2,6 +2,7 @@
 #
 # Host ports are chosen not to clash with other local projects
 # (which may use 5432, 6379, 8000 and 8080).
+#   Web app            http://localhost:4300
 #   API + Swagger UI   http://localhost:8180/swagger-ui.html
 #   Mailpit inbox      http://localhost:8025
 #   PostgreSQL         localhost:5442 (user/password/db: checkpoint)
@@ -43,6 +44,8 @@ services:
       CARD_HASH_KEY: ${CARD_HASH_KEY:-dev-only-card-hash-key-change-me}
       BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-organizer@checkpoint.local}
       BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:-checkpoint-demo}
+      # "demo" adds a separate demo club with a term of made-up history (see scripts/demo-data.sh).
+      SPRING_PROFILES_ACTIVE: ${CHECKPOINT_PROFILES:-default}
     ports:
       - "8180:8180"
     depends_on:
@@ -50,6 +53,27 @@ services:
         condition: service_healthy
       mailpit:
         condition: service_started
+
+  # The Angular app, served by nginx, which also forwards /api to the api service.
+  web:
+    build: ./frontend
+    ports:
+      - "4300:80"
+    depends_on:
+      - api
+
+  # Optional: HTTPS on your local network so a phone can use its camera (see scripts/phone-https.sh).
+  # Only starts with: docker compose --profile phone up
+  web-https:
+    image: nginx:1.31.8-alpine
+    profiles: ["phone"]
+    volumes:
+      - ./scripts/phone/nginx-https.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./.certs:/etc/nginx/certs:ro
+    ports:
+      - "4443:443"
+    depends_on:
+      - web
 
 volumes:
   db-data:

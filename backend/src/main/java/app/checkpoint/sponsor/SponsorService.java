@@ -7,6 +7,7 @@ import app.checkpoint.event.Event;
 import app.checkpoint.event.EventService;
 import app.checkpoint.organizer.CurrentOrganizer;
 import app.checkpoint.sponsor.dto.SponsorView;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,6 +45,11 @@ public class SponsorService {
         if (!removed) {
             throw new NotFoundException("Sponsor not found.");
         }
+    }
+
+    @Transactional(readOnly = true)
+    public List<SponsorRepository.SponsorOverview> overview(CurrentOrganizer me) {
+        return sponsors.findOverviewByClub(me.clubId());
     }
 
     @Transactional(readOnly = true)

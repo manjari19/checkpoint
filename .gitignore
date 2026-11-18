@@ -10,3 +10,9 @@ dist/
 .idea/
 .vscode/
 .DS_Store
+
+# Self-signed certificates for phone testing
+.certs/
+
+# Design reference images (third-party, never pushed)
+docs/design-refs/

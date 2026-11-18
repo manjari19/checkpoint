@@ -1,0 +1,118 @@
+@if (events.error()) {
+  <p class="alert" role="alert">Couldn't load your events. Refresh the page to try again.</p>
+}
+
+<div class="top">
+  <section class="card greeting" animate.enter="rise">
+    <app-sparkle-field />
+    <div class="greeting-body">
+      <p class="eyebrow">{{ stats().termLabel }} · {{ stats().eventsThisTerm }} {{ stats().eventsThisTerm === 1 ? 'event' : 'events' }} this term</p>
+      <h1 class="hello">{{ greetingText() }}@if (name()) {, <span class="accent">{{ name() }}</span>}.</h1>
+      @if (events.isLoading()) {
+        <span class="skel" style="width: 60%; height: 14px"></span>
+      } @else if (stats().nextEvent; as next) {
+        <div class="coming">
+          @if (comingNames().length > 0) {
+            <app-avatar-stack [names]="comingNames()" [total]="next.confirmed" [size]="30" />
+          }
+          <p class="muted"><strong>{{ next.confirmed }}</strong> {{ next.confirmed === 1 ? 'person is' : 'people are' }} coming to {{ next.title }}</p>
+        </div>
+      } @else {
+        <p class="muted">No upcoming events yet. Plan the next one and share the RSVP link.</p>
+      }
+      <ul class="stat-chips">
+        <li><app-icon name="calendar" [size]="15" /><b><app-count-up [value]="stats().upcomingCount" /></b> upcoming</li>
+        <li><app-icon name="users" [size]="15" /><b><app-count-up [value]="stats().checkedIn" /></b> check-ins this term</li>
+        <li><app-icon name="trend-up" [size]="15" /><b><app-count-up [value]="stats().turnout" format="percent" /></b> turnout</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="card next" animate.enter="rise" style="--i: 1" aria-labelledby="next-title">
+    <p class="eyebrow">Up next</p>
+    @if (events.isLoading()) {
+      <span class="skel" style="height: 54px; width: 54px; border-radius: 14px"></span>
+      <span class="skel" style="height: 16px; width: 70%"></span>
+      <span class="skel" style="height: 12px; width: 50%"></span>
+    } @else if (stats().nextEvent; as next) {
+      <div class="next-head">
+        <app-date-block [iso]="next.startsAt" />
+        <div class="next-title">
+          <h2 id="next-title">{{ next.title }}</h2>
+          <span class="muted">{{ formatTimeRange(next.startsAt, next.endsAt) }} · {{ next.location }}</span>
+        </div>
+      </div>
+      <div class="seats">
+        <div class="meter" role="presentation"><span [style.width.%]="Math.min(100, next.confirmed / next.capacity * 100)"></span></div>
+        <span class="muted">{{ next.confirmed }} / {{ next.capacity }} confirmed@if (next.waitlisted > 0) { · {{ next.waitlisted }} waiting}</span>
+      </div>
+      <div class="actions">
+        <a class="btn btn-primary" [routerLink]="['/events', next.id, 'check-in']"><app-icon name="scan" [size]="17" />Open check-in</a>
+        <a class="btn" [routerLink]="['/events', next.id]">View event <app-icon class="arrow" name="arrow-right" [size]="16" /></a>
+      </div>
+    } @else {
+      <app-empty-state title="Nothing planned" art="calendar" actionLabel="New event" link="/events/new" />
+    }
+  </section>
+</div>
+
+@if (events.isLoading()) {
+  <app-skeleton shape="kpis" [count]="4" />
+} @else {
+  <section class="kpis" aria-label="Key numbers this term">
+    @for (kpi of kpis(); track kpi.label; let i = $index) {
+      <app-kpi-card animate.enter="rise" [style.--i]="i + 2" [label]="kpi.label" [value]="kpi.value" [format]="kpi.format"
+                    [icon]="kpi.icon" [tint]="kpi.tint" [change]="kpi.change" [note]="kpi.note" [spark]="kpi.spark"
+                    [sparkLabel]="kpi.label + ' over the last ' + kpi.spark.length + ' events'" />
+    }
+  </section>
+}
+
+<div class="split">
+  <section class="card trend" animate.enter="rise" style="--i: 6">
+    <div class="card-head">
+      <div>
+        <h2>Attendance</h2>
+        <p>Confirmed and checked in, last {{ stats().trend.length || 8 }} events</p>
+      </div>
+    </div>
+    @if (events.isLoading()) {
+      <app-skeleton shape="chart" />
+    } @else if (stats().trend.length === 0) {
+      <app-empty-state title="Nothing to chart yet" message="The trend fills in as your events happen." art="chart" />
+    } @else {
+      <app-line-chart [labels]="trendLabels()" [fullLabels]="trendTitles()" [series]="trendSeries()"
+                      caption="Confirmed RSVPs and check-ins for recent events" />
+    }
+  </section>
+
+  <section class="card" animate.enter="rise" style="--i: 7">
+    <div class="card-head">
+      <div>
+        <h2>Top events</h2>
+        <p>By check-ins</p>
+      </div>
+      <a class="btn btn-small" routerLink="/events">All <app-icon class="arrow" name="arrow-right" [size]="15" /></a>
+    </div>
+    @if (events.isLoading()) {
+      <app-skeleton shape="rows" [count]="4" />
+    } @else if (stats().topEvents.length === 0) {
+      <app-empty-state title="No check-ins yet" message="Once people check in, your best-attended events show up here." art="badge" />
+    } @else {
+      <ol class="ranking">
+        @for (row of stats().topEvents; track row.event.id; let i = $index) {
+          <li>
+            <a class="rank-link" [routerLink]="['/events', row.event.id]">
+              <span class="rank">{{ i + 1 }}</span>
+              <span class="rank-title">
+                <strong>{{ row.event.title }}</strong>
+                <span>{{ row.event.checkedIn }} / {{ row.event.confirmed }} checked in · {{ formatDate(row.event.startsAt) }}</span>
+              </span>
+              <span class="chip purple">{{ formatPercent(row.turnout) }}</span>
+            </a>
+          </li>
+        }
+      </ol>
+    }
+  </section>
+</div>

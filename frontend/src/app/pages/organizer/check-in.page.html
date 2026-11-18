@@ -1,0 +1,78 @@
+<div class="screen vt-page">
+  <header class="bar">
+    <a class="icon-btn" [routerLink]="selectedId() ? ['/events', selectedId()] : '/overview'" aria-label="Leave check-in">
+      <app-icon name="arrow-left" />
+    </a>
+    <div class="event">
+      @if ((events.value() ?? []).length > 1) {
+        <select class="picker" aria-label="Event" [ngModel]="selectedId()" (ngModelChange)="selectedId.set($event); result.set(null)">
+          @for (e of events.value(); track e.id) {
+            <option [value]="e.id">{{ e.title }} · {{ formatDateTime(e.startsAt) }}</option>
+          }
+        </select>
+      } @else {
+        <strong class="title">{{ selected()?.title ?? 'Check-in' }}</strong>
+      }
+    </div>
+    @if (stats.value(); as s) {
+      <div class="count" [attr.aria-label]="s.checkedIn + ' of ' + s.confirmed + ' checked in'">
+        <strong><app-count-up [value]="s.checkedIn" /></strong><span>/ {{ s.confirmed }}</span>
+      </div>
+    }
+  </header>
+
+  @if (!events.isLoading() && !selected()) {
+    <div class="no-event">
+      <p>There are no events to check in to yet.</p>
+      <a class="btn btn-primary" routerLink="/events/new">Create an event</a>
+    </div>
+  } @else {
+    <div class="segmented mode" role="tablist" aria-label="What to scan">
+      <button type="button" role="tab" [class.active]="mode() === 'qr'" [attr.aria-selected]="mode() === 'qr'" (click)="switchMode('qr')">
+        <app-icon name="qr" [size]="17" />Ticket QR
+      </button>
+      <button type="button" role="tab" [class.active]="mode() === 'card'" [attr.aria-selected]="mode() === 'card'" (click)="switchMode('card')">
+        <app-icon name="card" [size]="17" />Student card
+      </button>
+    </div>
+
+    <app-barcode-scanner class="camera" [mode]="mode()" [paused]="busy()" (scanned)="onScan($event)" />
+
+    <section class="result" aria-live="assertive">
+      @for (r of results(); track r.id) {
+        <div class="result-card" [class]="r.tone" [class.shake]="r.tone === 'warning'" animate.enter="pop" animate.leave="fade-out">
+          <span class="result-icon">
+            @if (r.tone === 'success') {
+              <svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true"><path class="draw" d="M5 12.5l4.5 4.5L19 7.5" pathLength="1" /></svg>
+            } @else {
+              <app-icon [name]="r.icon" [size]="32" />
+            }
+          </span>
+          <div class="result-text">
+            <strong>{{ r.title }}</strong>
+            <span>{{ r.detail }}</span>
+          </div>
+          <span class="timer" [style.animation-duration.ms]="r.resetMs" aria-hidden="true"></span>
+        </div>
+      } @empty {
+        <p class="hint">
+          @if (busy()) { Checking… } @else if (mode() === 'qr') { Point the camera at the QR code on the ticket. }
+          @else { Hold the barcode on the student card flat inside the frame. }
+        </p>
+      }
+    </section>
+
+    <div class="manual">
+      @if (showManual()) {
+        <form (submit)="$event.preventDefault(); submitManual()" animate.enter="fade-in">
+          <input class="input" [placeholder]="mode() === 'qr' ? 'Ticket code' : 'Card number'" [attr.aria-label]="mode() === 'qr' ? 'Ticket code' : 'Card number'"
+                 [ngModel]="manualCode()" (ngModelChange)="manualCode.set($event)" name="code" autocomplete="off"
+                 [attr.inputmode]="mode() === 'card' ? 'numeric' : null" />
+          <button class="btn btn-primary" type="submit" [disabled]="busy() || !manualCode().trim()">Check in</button>
+        </form>
+      } @else {
+        <button type="button" class="btn btn-block" (click)="showManual.set(true)"><app-icon name="keyboard" [size]="17" />Type a code instead</button>
+      }
+    </div>
+  }
+</div>

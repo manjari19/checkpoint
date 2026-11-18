@@ -15,6 +15,7 @@ import app.checkpoint.club.Club;
 import app.checkpoint.common.ConflictException;
 import app.checkpoint.common.SecureTokens;
 import app.checkpoint.event.Event;
+import app.checkpoint.event.EventCategory;
 import app.checkpoint.event.EventRepository;
 import app.checkpoint.member.Member;
 import app.checkpoint.member.MemberService;
@@ -63,7 +64,7 @@ class RsvpServiceTest {
         service = new RsvpService(events, rsvps, members, new SecureTokens(), publisher,
                 Clock.fixed(NOW, ZoneOffset.UTC));
         event = new Event(new Club("Test"), "Networking Night", "", "SFU", NOW.plus(Duration.ofDays(10)),
-                NOW.plus(Duration.ofDays(10)).plus(Duration.ofHours(3)), 2);
+                NOW.plus(Duration.ofDays(10)).plus(Duration.ofHours(3)), 2, EventCategory.NETWORKING);
     }
 
     @Test
@@ -98,7 +99,7 @@ class RsvpServiceTest {
     @Test
     void anRsvpAfterTheEventStartedIsRefused() {
         Event started = new Event(new Club("Test"), "Past", "", "SFU", NOW.minus(Duration.ofHours(1)),
-                NOW.plus(Duration.ofHours(2)), 10);
+                NOW.plus(Duration.ofHours(2)), 10, EventCategory.SOCIAL);
         when(events.findByIdForUpdate(eventId)).thenReturn(Optional.of(started));
 
         assertThatThrownBy(() -> service.rsvp(eventId, TestData.rsvpRequest("Late")))

@@ -1,0 +1,96 @@
+<a class="back" [routerLink]="eventId() ? ['/events', eventId()] : '/events'"><app-icon name="arrow-left" [size]="16" />Back</a>
+
+<header class="page-header">
+  <div>
+    <h1>{{ eventId() ? 'Edit event' : 'New event' }}</h1>
+    <p>{{ eventId() ? 'Raising the capacity moves people off the waitlist straight away.' : 'Members RSVP from a public link once the event is created.' }}</p>
+  </div>
+</header>
+
+@if (loading()) {
+  <app-skeleton shape="panel" />
+} @else {
+  <form class="card form" [formGroup]="form" (ngSubmit)="save()" novalidate animate.enter="rise">
+    @if (error()) {
+      <p class="alert" role="alert">{{ error() }}</p>
+    }
+
+    <label class="field span-2">
+      <span>Title</span>
+      <input class="input" formControlName="title" placeholder="Networking Night" [class.invalid]="showError('title')" />
+      @if (showError('title')) { <span class="error">Give the event a title.</span> }
+      @if (serverErrors()['title']) { <span class="error">{{ serverErrors()['title'] }}</span> }
+    </label>
+
+    <label class="field">
+      <span>Category</span>
+      <select class="input" formControlName="category">
+        @for (c of categories; track c.value) {
+          <option [value]="c.value">{{ c.label }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="field">
+      <span>Capacity</span>
+      <input class="input" type="number" min="1" max="5000" formControlName="capacity" [class.invalid]="showError('capacity')" />
+      <span class="hint">When it's full, new RSVPs join the waitlist.</span>
+      @if (showError('capacity')) { <span class="error">Enter a number from 1 to 5000.</span> }
+    </label>
+
+    <label class="field span-2">
+      <span>Location</span>
+      <input class="input" formControlName="location" placeholder="SFU Burnaby, ASB 10900" [class.invalid]="showError('location')" />
+      @if (showError('location')) { <span class="error">Where is it happening?</span> }
+    </label>
+
+    <label class="field">
+      <span>Starts</span>
+      <input class="input" type="datetime-local" formControlName="startsAt" [class.invalid]="showError('startsAt')" />
+      @if (showError('startsAt')) { <span class="error">Pick a start time.</span> }
+    </label>
+
+    <label class="field">
+      <span>Ends</span>
+      <input class="input" type="datetime-local" formControlName="endsAt"
+             [class.invalid]="showError('endsAt') || form.hasError('endsBeforeStart')" />
+      @if (showError('endsAt')) { <span class="error">Pick an end time.</span> }
+      @if (form.hasError('endsBeforeStart')) { <span class="error">The event must end after it starts.</span> }
+    </label>
+
+    <label class="field span-2">
+      <span>Description</span>
+      <textarea class="input" formControlName="description" placeholder="What should members expect?"></textarea>
+    </label>
+
+    @if (!eventId()) {
+      <div class="field span-2">
+        <span>Sponsors</span>
+        <div class="sponsor-add">
+          <input class="input" [value]="sponsorDraft()" (input)="sponsorDraft.set($any($event.target).value)"
+                 (keydown.enter)="$event.preventDefault(); addSponsor()" placeholder="Company name" aria-label="Sponsor name" />
+          <button type="button" class="btn" (click)="addSponsor()" [disabled]="!sponsorDraft().trim()">
+            <app-icon name="plus" [size]="18" />Add
+          </button>
+        </div>
+        <span class="hint">Each sponsor gets a private booth link for collecting contacts from attendees who opt in.</span>
+        @if (sponsors().length > 0) {
+          <ul class="sponsor-list">
+            @for (name of sponsors(); track name) {
+              <li class="chip">{{ name }}
+                <button type="button" (click)="removeSponsor(name)" [attr.aria-label]="'Remove ' + name"><app-icon name="x" [size]="14" /></button>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    }
+
+    <div class="buttons span-2">
+      <a class="btn" [routerLink]="eventId() ? ['/events', eventId()] : '/events'">Cancel</a>
+      <button class="btn btn-primary" type="submit" [disabled]="saving()">
+        {{ saving() ? 'Saving…' : eventId() ? 'Save changes' : 'Create event' }}
+      </button>
+    </div>
+  </form>
+}

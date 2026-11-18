@@ -1,5 +1,6 @@
 package app.checkpoint.event.dto;
 
+import app.checkpoint.event.EventCategory;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -16,6 +17,7 @@ public record EventRequest(
         @NotNull Instant startsAt,
         @NotNull Instant endsAt,
         @Min(1) @Max(5000) int capacity,
+        @Schema(description = "Defaults to OTHER") EventCategory category,
         @Schema(description = "Sponsor names. Only used when creating an event; "
                 + "afterwards, add or remove sponsors with the sponsor endpoints.")
         List<@NotBlank @Size(max = 120) String> sponsors) {

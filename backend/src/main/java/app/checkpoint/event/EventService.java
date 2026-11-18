@@ -2,6 +2,7 @@ package app.checkpoint.event;
 
 import app.checkpoint.club.ClubRepository;
 import app.checkpoint.common.ConflictException;
+import app.checkpoint.common.CsvWriter;
 import app.checkpoint.common.NotFoundException;
 import app.checkpoint.common.SecureTokens;
 import app.checkpoint.event.dto.AttendeeRow;
@@ -73,7 +74,7 @@ public class EventService {
     @Transactional
     public EventDetail create(CurrentOrganizer me, EventRequest request) {
         Event event = new Event(clubs.getReferenceById(me.clubId()), request.title(), request.description(),
-                request.location(), request.startsAt(), request.endsAt(), request.capacity());
+                request.location(), request.startsAt(), request.endsAt(), request.capacity(), request.category());
         request.sponsorsOrEmpty().stream().distinct()
                 .forEach(name -> event.addSponsor(new Sponsor(event, name, tokens.longToken())));
         events.save(event);
@@ -96,7 +97,7 @@ public class EventService {
                     + " people already confirmed. Ask some of them to cancel first.");
         }
         event.update(request.title(), request.description(), request.location(), request.startsAt(),
-                request.endsAt(), request.capacity());
+                request.endsAt(), request.capacity(), request.category());
         rsvpService.fillOpenSeats(event, clock.instant());
         return detail(me, eventId);
     }
@@ -130,6 +131,15 @@ public class EventService {
     }
 
     @Transactional(readOnly = true)
+    public String attendeesCsv(CurrentOrganizer me, UUID eventId) {
+        CsvWriter csv = new CsvWriter().row("name", "email", "status", "waitlist_position", "rsvp_at",
+                "checked_in_at", "check_in_method", "shares_contact_with_sponsors");
+        attendees(me, eventId).forEach(a -> csv.row(a.name(), a.email(), a.status(), a.waitlistPosition(),
+                a.rsvpAt(), a.checkedInAt(), a.checkInMethod(), a.sponsorOptIn() ? "yes" : "no"));
+        return csv.toString();
+    }
+
+    @Transactional(readOnly = true)
     public EventStats stats(CurrentOrganizer me, UUID eventId) {
         Event event = requireOwnEvent(me, eventId);
         RsvpCounts counts = events.countRsvps(eventId);
@@ -155,7 +165,7 @@ public class EventService {
         RsvpCounts counts = events.countRsvps(eventId);
         return new PublicEventView(event.getId(), event.getClub().getName(), event.getTitle(),
                 event.getDescription(), event.getLocation(), event.getStartsAt(), event.getEndsAt(),
-                event.getCapacity(), Math.max(0, event.getCapacity() - counts.getConfirmed()),
+                event.getCapacity(), event.getCategory(), Math.max(0, event.getCapacity() - counts.getConfirmed()),
                 counts.getWaitlisted(), !event.hasStarted(clock.instant()),
                 event.getSponsors().stream().map(Sponsor::getName).toList());
     }

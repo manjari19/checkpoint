@@ -1,5 +1,6 @@
 package app.checkpoint.event.dto;
 
+import app.checkpoint.event.EventCategory;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -19,6 +20,7 @@ public record PublicEventView(
         Instant startsAt,
         Instant endsAt,
         int capacity,
+        EventCategory category,
         long spotsLeft,
         long waitlistLength,
         boolean rsvpOpen,

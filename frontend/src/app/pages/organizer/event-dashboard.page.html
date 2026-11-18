@@ -1,0 +1,191 @@
+<a class="back" routerLink="/events"><app-icon name="arrow-left" [size]="16" />All events</a>
+
+@if (event.error()) {
+  <div class="card">
+    <app-empty-state title="Event not found" message="It may have been removed, or it belongs to another club."
+                     art="search" actionLabel="Back to events" link="/events" />
+  </div>
+} @else if (event.value(); as e) {
+  <header class="card head" animate.enter="rise">
+    <div class="title">
+      <app-date-block [iso]="e.startsAt" />
+      <div class="title-text">
+        <div class="chips">
+          <span class="chip purple">{{ categoryLabel(e.category) }}</span>
+          @if (status(); as s) {
+            <span class="chip" [class.warning]="s.tone === 'warning'" [class.gold]="s.tone === 'gold'">{{ s.label }}</span>
+          }
+        </div>
+        <h1>{{ e.title }}</h1>
+        <ul class="facts">
+          <li><app-icon name="calendar" [size]="15" />{{ formatLongDate(e.startsAt) }}</li>
+          <li><app-icon name="clock" [size]="15" />{{ formatTimeRange(e.startsAt, e.endsAt) }}</li>
+          <li><app-icon name="pin" [size]="15" />{{ e.location }}</li>
+        </ul>
+      </div>
+    </div>
+    <div class="actions">
+      <a class="btn btn-primary" [routerLink]="['/events', e.id, 'check-in']"><app-icon name="scan" [size]="17" />Open check-in</a>
+      <a class="btn" [routerLink]="['/events', e.id, 'edit']"><app-icon name="edit" [size]="16" />Edit</a>
+    </div>
+  </header>
+
+  @if (actionError()) {
+    <p class="alert" role="alert">{{ actionError() }}</p>
+  }
+
+  @if (stats.value(); as s) {
+    <section class="kpis" aria-label="Event numbers">
+      <app-kpi-card animate.enter="rise" style="--i: 1" label="Confirmed" [value]="s.confirmed" [suffix]="'/ ' + s.capacity"
+                    icon="ticket" tint="purple" [progress]="s.confirmed / s.capacity"
+                    [note]="s.capacity - s.confirmed > 0 ? (s.capacity - s.confirmed) + ' spots left' : 'Full'" />
+      <app-kpi-card animate.enter="rise" style="--i: 2" label="Waitlist" [value]="s.waitlisted" icon="hourglass" tint="blue"
+                    [note]="s.cancelled + ' cancelled'" />
+      <app-kpi-card animate.enter="rise" style="--i: 3" label="Checked in" [value]="s.checkedIn" icon="user-check" tint="green"
+                    [note]="s.checkedInByQr + ' by QR · ' + s.checkedInByCard + ' by card'"
+                    [spark]="cumulative().length > 1 ? cumulative() : null" sparkLabel="Check-ins over time" />
+      <app-kpi-card animate.enter="rise" style="--i: 4" label="No-show rate" [value]="s.noShowRate" format="percent" icon="user-x" tint="amber"
+                    [note]="s.eventStarted ? (s.eventEnded ? s.noShows + ' didn’t come' : s.noShows + ' not here yet') : 'Shown once the event starts'" />
+    </section>
+  } @else {
+    <app-skeleton shape="kpis" [count]="4" />
+  }
+
+  <div class="split">
+    <section class="card attendees" animate.enter="rise" style="--i: 5">
+      <div class="card-head">
+        <h2>Attendees</h2>
+        <a class="btn btn-small" [href]="exportUrls.attendees(e.id)" download (click)="exported('the attendee list')">
+          <app-icon name="download" [size]="15" />CSV
+        </a>
+      </div>
+      <div class="tools">
+        <div class="segmented" role="tablist" aria-label="Filter attendees">
+          @for (f of filters; track f.value) {
+            <button type="button" role="tab" [class.active]="filter() === f.value" [attr.aria-selected]="filter() === f.value"
+                    (click)="filter.set(f.value)">{{ f.label }} {{ counts()[f.value] }}</button>
+          }
+        </div>
+        <label class="search">
+          <app-icon name="search" [size]="16" />
+          <input class="input" type="search" placeholder="Search attendees" aria-label="Search attendees by name or email"
+                 [value]="search()" (input)="search.set($any($event.target).value)" />
+        </label>
+      </div>
+
+      @if (attendees.isLoading() && !attendees.value()) {
+        <app-skeleton shape="rows" [count]="6" />
+      } @else if ((attendees.value() ?? []).length === 0) {
+        <app-empty-state title="No RSVPs yet" message="Share the RSVP link with your members to start filling seats." art="people" />
+      } @else if (rows().length === 0) {
+        <p class="muted none">No one matches that search.</p>
+      } @else {
+        <ul class="rows">
+          @for (row of rows(); track row.rsvpId) {
+            <li class="row">
+              <app-avatar [name]="row.name" [size]="32" />
+              <a class="who" [routerLink]="['/members', row.memberId]">
+                <strong>{{ row.name }}</strong>
+                <span>{{ row.email }}</span>
+              </a>
+              <div class="state">
+                @switch (row.status) {
+                  @case ('CONFIRMED') {
+                    @if (row.checkedInAt) {
+                      <span class="chip success"><app-icon name="check" [size]="13" />In at {{ formatTime(row.checkedInAt) }}</span>
+                    } @else {
+                      <span class="chip">Confirmed</span>
+                    }
+                  }
+                  @case ('WAITLISTED') { <span class="chip warning">Waitlist #{{ row.waitlistPosition }}</span> }
+                  @case ('CANCELLED') { <span class="chip">Cancelled</span> }
+                }
+                @if (row.cardLinked) { <span class="chip" title="Student card linked"><app-icon name="card" [size]="13" />Card</span> }
+              </div>
+              <div class="act">
+                @if (row.status === 'CONFIRMED' && !row.checkedInAt) {
+                  <button type="button" class="btn btn-small btn-soft" (click)="checkIn(row)"
+                          [disabled]="checkingIn() === row.rsvpId" [attr.aria-label]="'Check in ' + row.name">
+                    {{ checkingIn() === row.rsvpId ? 'Checking in…' : 'Check in' }}
+                  </button>
+                }
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+
+    <div class="side">
+      <section class="card" animate.enter="rise" style="--i: 6">
+        <div class="card-head">
+          <div>
+            <h2>Arrivals</h2>
+            <p>Check-ins every {{ stats.value()?.bucketMinutes ?? 15 }} minutes</p>
+          </div>
+        </div>
+        @if (!stats.value()) {
+          <app-skeleton shape="chart" />
+        } @else if ((stats.value()?.timeline ?? []).length === 0) {
+          <app-empty-state title="No arrivals yet" message="Arrivals show up here once check-in starts." art="door" />
+        } @else {
+          <app-bar-chart [labels]="timelineLabels()" [series]="timelineSeries()" [height]="190" categoryName="Time"
+                         caption="Check-ins per 15 minutes" />
+        }
+      </section>
+
+      <section class="card" animate.enter="rise" style="--i: 7">
+        <h2>RSVP link</h2>
+        <p class="muted small">Anyone with this link can RSVP. No account needed.</p>
+        <div class="link-box">
+          <code>{{ rsvpLink() }}</code>
+          <div class="link-actions">
+            <app-copy-button [text]="rsvpLink()" label="Copy link" />
+            <a class="btn btn-small" [routerLink]="['/e', e.id]" target="_blank">Open page <app-icon class="arrow" name="arrow-right" [size]="15" /></a>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" animate.enter="rise" style="--i: 8">
+        <div class="card-head">
+          <h2>Sponsors</h2>
+          @if (e.sponsors.length > 0) {
+            <a class="btn btn-small" [href]="exportUrls.sponsorContacts(e.id)" download (click)="exported('sponsor contacts')">
+              <app-icon name="download" [size]="15" />Contacts CSV
+            </a>
+          }
+        </div>
+        @if (e.sponsors.length === 0) {
+          <p class="muted small">No sponsors yet. Each sponsor gets a private booth link for scanning attendees who opt in.</p>
+        }
+        <ul class="sponsors">
+          @for (s of e.sponsors; track s.id) {
+            <li animate.enter="fade-in" animate.leave="fade-out">
+              <div class="sponsor-name">
+                <strong>{{ s.name }}</strong>
+                <span>{{ s.leadCount }} {{ s.leadCount === 1 ? 'contact' : 'contacts' }}</span>
+              </div>
+              <div class="sponsor-actions">
+                <app-copy-button [text]="boothLink(s.boothCode)" label="Booth link" [ariaLabel]="'Copy booth link for ' + s.name" />
+                <button type="button" class="icon-btn" (click)="removeSponsor(s.id, s.name)" [attr.aria-label]="'Remove ' + s.name">
+                  <app-icon name="trash" [size]="16" />
+                </button>
+              </div>
+            </li>
+          }
+        </ul>
+        <form class="sponsor-add" (submit)="$event.preventDefault(); addSponsor()">
+          <input class="input" placeholder="Add a sponsor" aria-label="Sponsor name" [value]="sponsorName()"
+                 (input)="sponsorName.set($any($event.target).value)" />
+          <button class="btn" type="submit" [disabled]="!sponsorName().trim()"><app-icon name="plus" [size]="16" />Add</button>
+        </form>
+      </section>
+    </div>
+  </div>
+} @else {
+  <div class="card head-skel"><span class="skel" style="width: 54px; height: 54px; border-radius: 14px"></span>
+    <div class="lines"><span class="skel" style="width: 120px; height: 22px; border-radius: 999px"></span><span class="skel" style="width: 60%; height: 26px"></span><span class="skel" style="width: 45%; height: 13px"></span></div>
+  </div>
+  <app-skeleton shape="kpis" [count]="4" />
+  <app-skeleton shape="panel" />
+}

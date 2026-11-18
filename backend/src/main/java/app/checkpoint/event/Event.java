@@ -3,6 +3,8 @@ package app.checkpoint.event;
 import app.checkpoint.club.Club;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -44,6 +46,9 @@ public class Event {
 
     private int capacity;
 
+    @Enumerated(EnumType.STRING)
+    private EventCategory category;
+
     private Instant createdAt = Instant.now();
 
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -54,13 +59,13 @@ public class Event {
     }
 
     public Event(Club club, String title, String description, String location,
-                 Instant startsAt, Instant endsAt, int capacity) {
+                 Instant startsAt, Instant endsAt, int capacity, EventCategory category) {
         this.club = club;
-        update(title, description, location, startsAt, endsAt, capacity);
+        update(title, description, location, startsAt, endsAt, capacity, category);
     }
 
     public void update(String title, String description, String location,
-                       Instant startsAt, Instant endsAt, int capacity) {
+                       Instant startsAt, Instant endsAt, int capacity, EventCategory category) {
         if (!endsAt.isAfter(startsAt)) {
             throw new IllegalArgumentException("The event must end after it starts.");
         }
@@ -70,6 +75,7 @@ public class Event {
         this.startsAt = startsAt;
         this.endsAt = endsAt;
         this.capacity = capacity;
+        this.category = category == null ? EventCategory.OTHER : category;
     }
 
     public void addSponsor(Sponsor sponsor) {
@@ -114,6 +120,10 @@ public class Event {
 
     public int getCapacity() {
         return capacity;
+    }
+
+    public EventCategory getCategory() {
+        return category;
     }
 
     public List<Sponsor> getSponsors() {

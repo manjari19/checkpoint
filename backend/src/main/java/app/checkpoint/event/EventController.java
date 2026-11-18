@@ -73,6 +73,12 @@ public class EventController {
         return events.attendees(me, eventId);
     }
 
+    @Operation(summary = "Download the attendee list as CSV")
+    @GetMapping(value = "/{eventId}/attendees.csv", produces = "text/csv")
+    public ResponseEntity<String> attendeesCsv(@AuthenticationPrincipal CurrentOrganizer me, @PathVariable UUID eventId) {
+        return CsvResponses.download("attendees.csv", events.attendeesCsv(me, eventId));
+    }
+
     @Operation(summary = "Dashboard numbers: RSVPs, waitlist, check-ins, no-show rate, check-ins over time")
     @GetMapping("/{eventId}/stats")
     public EventStats stats(@AuthenticationPrincipal CurrentOrganizer me, @PathVariable UUID eventId) {

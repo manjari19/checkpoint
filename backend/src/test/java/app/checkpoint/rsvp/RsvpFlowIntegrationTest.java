@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -151,6 +152,17 @@ class RsvpFlowIntegrationTest extends IntegrationTest {
 
         mvc.perform(get("/api/public/tickets/{token}", waiting.manageToken()))
                 .andExpect(jsonPath("$.status").value("CONFIRMED"));
+    }
+
+    @Test
+    void attendeeListExportsAsCsv() throws Exception {
+        RsvpRequest request = TestData.rsvpRequest("Ada");
+        rsvp(request);
+
+        mvc.perform(get("/api/events/{id}/attendees.csv", event.getId()).with(as(me)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("name,email,status,waitlist_position")))
+                .andExpect(content().string(containsString("Ada," + request.email() + ",CONFIRMED,,")));
     }
 
     @Test

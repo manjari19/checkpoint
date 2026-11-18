@@ -1,6 +1,7 @@
 package app.checkpoint.event.dto;
 
 import app.checkpoint.event.Event;
+import app.checkpoint.event.EventCategory;
 import app.checkpoint.event.RsvpCounts;
 import app.checkpoint.sponsor.dto.SponsorView;
 import java.time.Instant;
@@ -16,6 +17,7 @@ public record EventDetail(
         Instant startsAt,
         Instant endsAt,
         int capacity,
+        EventCategory category,
         long confirmed,
         long waitlisted,
         long checkedIn,
@@ -23,7 +25,7 @@ public record EventDetail(
 
     public static EventDetail of(Event event, RsvpCounts counts, List<SponsorView> sponsors) {
         return new EventDetail(event.getId(), event.getTitle(), event.getDescription(), event.getLocation(),
-                event.getStartsAt(), event.getEndsAt(), event.getCapacity(),
+                event.getStartsAt(), event.getEndsAt(), event.getCapacity(), event.getCategory(),
                 counts.getConfirmed(), counts.getWaitlisted(), counts.getCheckedIn(), sponsors);
     }
 }

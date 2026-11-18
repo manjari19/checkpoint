@@ -1,0 +1,56 @@
+<main class="page vt-page">
+  @if (booth.error()) {
+    <section class="missing">
+      <h1>Booth link not <span class="accent">valid</span>.</h1>
+      <p class="muted">Ask the event organizers for a new booth link.</p>
+    </section>
+  } @else if (booth.value(); as b) {
+    <header class="head">
+      <p class="eyebrow">Sponsor booth</p>
+      <h1>{{ b.sponsorName }}</h1>
+      <p class="muted">{{ b.eventTitle }} · {{ formatLongDate(b.eventStartsAt) }}</p>
+    </header>
+
+    <app-barcode-scanner class="camera" mode="qr" [paused]="busy()" (scanned)="onScan($event)" />
+
+    <section class="result" aria-live="assertive">
+      @for (r of results(); track r.id) {
+        <div class="result-card" [class]="r.tone" [class.shake]="r.tone === 'warning'" animate.enter="pop">
+          <span class="result-icon"><app-icon [name]="r.icon" [size]="26" /></span>
+          <div class="result-text"><strong>{{ r.title }}</strong><span>{{ r.detail }}</span></div>
+        </div>
+      } @empty {
+        <p class="hint">Scan the QR code on an attendee's ticket to save their contact.</p>
+      }
+    </section>
+
+    <form class="manual" (submit)="$event.preventDefault(); onScan(manualCode())">
+      <input class="input" placeholder="Or type a ticket code" aria-label="Ticket code" name="code" autocomplete="off"
+             [ngModel]="manualCode()" (ngModelChange)="manualCode.set($event)" />
+      <button class="btn" type="submit" [disabled]="busy() || !manualCode().trim()">Save</button>
+    </form>
+
+    <section class="card">
+      <div class="leads-head">
+        <h2>Contacts</h2>
+        <span class="count">{{ b.leads.length }}</span>
+      </div>
+      @if (b.leads.length === 0) {
+        <p class="muted">No contacts yet. Only attendees who agreed to share their details can be saved.</p>
+      } @else {
+        <ul class="leads">
+          @for (lead of b.leads; track lead.email) {
+            <li animate.enter="rise">
+              <app-avatar [name]="lead.name" [size]="32" />
+              <div class="who"><strong>{{ lead.name }}</strong><a [href]="'mailto:' + lead.email">{{ lead.email }}</a></div>
+              <span class="muted time">{{ formatTime(lead.scannedAt) }}</span>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  } @else {
+    <app-skeleton shape="hero" />
+    <app-skeleton shape="panel" />
+  }
+</main>

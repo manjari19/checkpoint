@@ -1,0 +1,312 @@
+:host {
+  display: grid;
+  gap: 16px;
+}
+
+// Header card: date badge, chips, the title in serif, and the actions, over a soft purple glow.
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px;
+  background:
+    radial-gradient(60% 140% at 100% 0%, rgba(139, 92, 246, 0.2), transparent 70%),
+    var(--surface);
+}
+
+.title {
+  display: flex;
+  gap: 14px;
+  min-width: 0;
+  flex: 1 1 420px;
+}
+
+.title-text {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+
+  h1 {
+    overflow-wrap: anywhere;
+  }
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--muted);
+  font-size: 0.8125rem;
+
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.side {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+.small {
+  margin-top: 2px;
+  font-size: 0.8125rem;
+}
+
+.tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.search {
+  position: relative;
+  flex: 1 1 200px;
+  min-width: 0;
+
+  app-icon {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+  }
+
+  .input {
+    padding-left: 38px;
+    min-height: 40px;
+    border-radius: 999px;
+  }
+}
+
+.none {
+  padding: 20px 0;
+}
+
+// Long lists scroll inside the card, so the sidebar cards stay next to them.
+.rows {
+  max-height: 600px;
+  margin: 0 -8px;
+  padding: 0 8px;
+  overflow-y: auto;
+  list-style: none;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 9px 8px;
+  margin: 0 -8px;
+  border-radius: 12px;
+  border-top: 1px solid var(--border);
+  transition: background-color var(--dur-fast);
+
+  &:first-child {
+    border-top-color: transparent;
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.025);
+  }
+}
+
+.who {
+  display: grid;
+  min-width: 0;
+  color: var(--text);
+
+  strong,
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  strong {
+    font-weight: 600;
+  }
+
+  span {
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+}
+
+.state {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.act:empty {
+  display: none;
+}
+
+.link-box {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+
+  code {
+    display: block;
+    padding: 9px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    font-size: 0.75rem;
+    color: var(--muted);
+    overflow-wrap: anywhere;
+  }
+}
+
+.link-actions,
+.sponsor-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sponsors {
+  display: grid;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 12px;
+    padding: 10px 0;
+    border-top: 1px solid var(--border);
+
+    &:first-child {
+      border-top: 0;
+    }
+  }
+
+  .icon-btn {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+.sponsor-name {
+  display: grid;
+  min-width: 0;
+
+  span {
+    color: var(--muted);
+    font-size: 0.75rem;
+  }
+}
+
+.sponsor-add {
+  display: flex;
+  gap: 8px;
+
+  .input {
+    flex: 1;
+    min-width: 0;
+    border-radius: 999px;
+  }
+}
+
+.head-skel {
+  display: flex;
+  gap: 14px;
+
+  .lines {
+    display: grid;
+    gap: 8px;
+    flex: 1;
+  }
+}
+
+@media (max-width: 1180px) {
+  .split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 1000px) {
+  .kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  // Four filter tabs do not fit in one row on a phone: show them as a 2x2 grid instead of cutting one off.
+  .tools .segmented {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+    border-radius: 18px;
+  }
+
+  .row {
+    grid-template-columns: 32px minmax(0, 1fr) auto;
+
+    .state {
+      grid-column: 2;
+      justify-content: flex-start;
+    }
+
+    .act {
+      grid-column: 3;
+      grid-row: 1 / span 2;
+    }
+  }
+
+  .actions .btn {
+    flex: 1;
+  }
+
+  .kpis {
+    gap: 10px;
+  }
+
+  .head {
+    padding: 16px;
+  }
+}

@@ -92,6 +92,16 @@ class SponsorBoothIntegrationTest extends IntegrationTest {
     }
 
     @Test
+    void organizersSeeAllSponsorsAcrossEvents() throws Exception {
+        mvc.perform(get("/api/sponsors").with(as(me)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].name").value("Acme Software"))
+                .andExpect(jsonPath("$[0].eventTitle").value(event.getTitle()))
+                .andExpect(jsonPath("$[0].leadCount").value(0));
+    }
+
+    @Test
     void removingASponsorDisablesTheirBoothLink() throws Exception {
         mvc.perform(delete("/api/events/{e}/sponsors/{s}", event.getId(), sponsor.id()).with(as(me)))
                 .andExpect(status().isNoContent());
@@ -104,9 +114,10 @@ class SponsorBoothIntegrationTest extends IntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"title":"Networking Night","location":"SFU Burnaby","capacity":80,
-                                 "startsAt":"2030-01-21T02:00:00Z","endsAt":"2030-01-21T05:00:00Z",
+                                 "startsAt":"2030-01-21T02:00:00Z","endsAt":"2030-01-21T05:00:00Z","category":"NETWORKING",
                                  "sponsors":["SAP","Acme"]}"""))
                 .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.category").value("NETWORKING"))
                 .andExpect(jsonPath("$.sponsors.length()").value(2))
                 .andExpect(jsonPath("$.sponsors[0].boothCode").isNotEmpty());
     }

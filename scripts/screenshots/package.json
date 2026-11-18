@@ -1,0 +1,9 @@
+{
+  "name": "checkpoint-screenshots",
+  "private": true,
+  "type": "module",
+  "description": "Headless browser layout check and screenshots, run inside the Playwright Docker image by scripts/screenshots.sh",
+  "dependencies": {
+    "playwright": "1.65.1"
+  }
+}

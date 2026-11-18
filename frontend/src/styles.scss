@@ -1,0 +1,759 @@
+// Global styles: design tokens, base elements, shared building blocks (cards, buttons, fields, chips,
+// tables, skeletons) and the shared motion. Component styles handle layout.
+//
+// Look: near-black purple page, slightly lighter purple cards with a soft top highlight, purple as the
+// working accent (charts, active nav, highlights) and WiCS gold only for the most important action on a
+// screen. Fraunces (a warm serif) for headings with an italic accent word; Inter for everything else.
+// Fonts are bundled from npm in angular.json, so the app makes no third-party requests.
+//
+// Contrast (WCAG): text 17.8:1 on the page; muted text 7.4:1 and subtle text 5.3:1 on cards;
+// purple text 8.4:1 on cards; white on the active-nav purple 5.5:1; card ink on gold 8.7:1.
+
+:root {
+  // Surfaces
+  --bg: #0b0915;
+  --bg-2: #100c1e;
+  --surface: #17132a;
+  --surface-2: #1d1834;
+  --surface-3: #241e3f;
+  --border: rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(255, 255, 255, 0.14);
+  --highlight: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+
+  // Text
+  --text: #f4f2fa;
+  --muted: #a9a1c4;
+  --subtle: #8e86ab;
+
+  // Working accent
+  --purple: #8b5cf6;
+  --purple-strong: #6d4ae8;
+  --purple-text: #b9a3ff;
+  --purple-soft: rgba(139, 92, 246, 0.16);
+  --purple-line: rgba(139, 92, 246, 0.45);
+  --purple-glow: rgba(139, 92, 246, 0.35);
+
+  // The one call-to-action color (WiCS gold)
+  --gold: #f0a500;
+  --gold-hover: #ffb61f;
+  --on-gold: #17132a;
+  --gold-soft: rgba(240, 165, 0, 0.14);
+
+  // Illustration accent
+  --coral: #e9967f;
+
+  // Status text on dark surfaces. Always paired with an icon or words, never color alone.
+  --success: #4ade80;
+  --warning: #fbbf24;
+  --danger: #f87171;
+
+  // KPI card tints
+  --tint-purple: #8b5cf6;
+  --tint-green: #34d399;
+  --tint-blue: #60a5fa;
+  --tint-amber: #f5b83d;
+
+  // Chart series, validated for color-vision deficiency on the card surface (#17132a).
+  --series-1: #8b5cf6;
+  --series-2: #d0705a;
+
+  --radius-sm: 10px;
+  --radius: 14px;
+  --radius-lg: 16px;
+
+  --font-sans: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-serif: 'Fraunces Variable', Georgia, 'Times New Roman', serif;
+
+  // Motion: quick and never in the way.
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --dur-fast: 150ms;
+  --dur: 220ms;
+  --dur-slow: 300ms;
+
+  --focus: #c4b5fd;
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+  background:
+    radial-gradient(900px 480px at 18% -8%, rgba(139, 92, 246, 0.13), transparent 70%),
+    radial-gradient(700px 420px at 100% 0%, rgba(99, 70, 200, 0.08), transparent 70%),
+    var(--bg);
+  background-repeat: no-repeat;
+  background-color: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-weight: 560;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+
+h1 {
+  font-size: clamp(1.5rem, 1.2rem + 1.1vw, 1.85rem);
+}
+
+h2 {
+  font-size: 1.08rem;
+}
+
+h3 {
+  font-size: 0.98rem;
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: var(--purple-text);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// Clear keyboard focus everywhere; mouse clicks don't show it.
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+img,
+svg,
+video {
+  max-width: 100%;
+}
+
+// The italic serif accent word in hero headlines.
+.accent {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 420;
+  letter-spacing: 0;
+  color: var(--purple-text);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+// Cards: a lighter purple panel with a thin border and a soft highlight on the top edge.
+.card {
+  position: relative;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0) 120px), var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--highlight);
+  padding: 18px;
+  min-width: 0;
+}
+
+// Cards you can click lift a little and their border glows.
+.lift {
+  transition: transform var(--dur) var(--ease), border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+
+  &:hover {
+    transform: translateY(-2px);
+    border-color: var(--purple-line);
+    box-shadow: var(--highlight), 0 10px 30px -14px var(--purple-glow);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+
+  p {
+    margin-top: 2px;
+    color: var(--muted);
+    font-size: 0.8125rem;
+  }
+}
+
+// Buttons: pills. Gold is reserved for the main action on a screen.
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 18px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background-color var(--dur-fast),
+    border-color var(--dur-fast),
+    color var(--dur-fast),
+    transform var(--dur-fast) var(--ease),
+    box-shadow var(--dur-fast);
+
+  // Disabled buttons keep their own look on hover (a disabled gold button stays gold).
+  &:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.26);
+    text-decoration: none;
+  }
+
+  // Buttons press down a little.
+  &:active:not(:disabled) {
+    transform: translateY(1px) scale(0.98);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  svg {
+    flex: none;
+  }
+
+  // The arrow in outlined buttons slides right on hover.
+  .arrow {
+    transition: transform var(--dur) var(--ease);
+  }
+
+  &:hover:not(:disabled) .arrow {
+    transform: translateX(3px);
+  }
+}
+
+.btn-primary {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--on-gold);
+  box-shadow: 0 6px 20px -8px rgba(240, 165, 0, 0.55);
+
+  &:hover:not(:disabled) {
+    background: var(--gold-hover);
+    border-color: var(--gold-hover);
+  }
+}
+
+.btn-soft {
+  border-color: transparent;
+  background: var(--purple-soft);
+  color: var(--purple-text);
+
+  &:hover:not(:disabled) {
+    background: rgba(139, 92, 246, 0.24);
+    border-color: transparent;
+  }
+}
+
+.btn-danger {
+  border-color: rgba(248, 113, 113, 0.45);
+  color: var(--danger);
+
+  &:hover:not(:disabled) {
+    background: rgba(248, 113, 113, 0.1);
+    border-color: rgba(248, 113, 113, 0.6);
+  }
+}
+
+.btn-small {
+  min-height: 32px;
+  padding: 0 12px;
+  font-size: 0.8125rem;
+  gap: 6px;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+// Fingers need bigger targets than mouse pointers.
+@media (pointer: coarse) {
+  .btn {
+    min-height: 44px;
+  }
+
+  .btn-small {
+    min-height: 38px;
+  }
+}
+
+.icon-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  transition: background-color var(--dur-fast), transform var(--dur-fast) var(--ease);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  &:active {
+    transform: scale(0.94);
+  }
+}
+
+// Form fields
+.field {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+
+  > span,
+  > label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+
+  .hint {
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-weight: 400;
+  }
+
+  .error {
+    font-size: 0.78rem;
+    color: var(--danger);
+    font-weight: 400;
+  }
+}
+
+.input,
+select.input,
+textarea.input {
+  width: 100%;
+  min-height: 42px;
+  padding: 9px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
+
+  &::placeholder {
+    color: var(--subtle);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--purple);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3);
+  }
+
+  &.invalid {
+    border-color: var(--danger);
+  }
+}
+
+textarea.input {
+  min-height: 104px;
+  resize: vertical;
+}
+
+// Calendar and clock pickers render in light mode unless told otherwise.
+input[type='datetime-local'].input::-webkit-calendar-picker-indicator {
+  filter: invert(0.8);
+}
+
+.check {
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  gap: 12px;
+  align-items: start;
+  cursor: pointer;
+
+  input {
+    width: 20px;
+    height: 20px;
+    margin: 1px 0 0;
+    accent-color: var(--purple);
+    cursor: pointer;
+  }
+
+  strong {
+    display: block;
+    font-weight: 600;
+  }
+
+  small {
+    display: block;
+    margin-top: 2px;
+    color: var(--muted);
+    font-size: 0.78rem;
+  }
+}
+
+// Chips
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+
+  &.purple {
+    color: var(--purple-text);
+    border-color: rgba(139, 92, 246, 0.35);
+    background: var(--purple-soft);
+  }
+
+  &.gold {
+    color: var(--gold);
+    border-color: rgba(240, 165, 0, 0.4);
+    background: var(--gold-soft);
+  }
+
+  &.success {
+    color: var(--success);
+    border-color: rgba(74, 222, 128, 0.3);
+    background: rgba(74, 222, 128, 0.08);
+  }
+
+  &.warning {
+    color: var(--warning);
+    border-color: rgba(251, 191, 36, 0.3);
+    background: rgba(251, 191, 36, 0.08);
+  }
+
+  &.danger {
+    color: var(--danger);
+    border-color: rgba(248, 113, 113, 0.3);
+    background: rgba(248, 113, 113, 0.08);
+  }
+}
+
+// Alerts
+.alert {
+  padding: 11px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(248, 113, 113, 0.4);
+  background: rgba(248, 113, 113, 0.08);
+  color: #fecaca;
+  font-size: 0.875rem;
+}
+
+// Tables scroll inside their card instead of stretching the page.
+.table-wrap {
+  overflow-x: auto;
+  margin: 0 -18px;
+  padding: 0 18px;
+}
+
+table.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+
+  th {
+    text-align: left;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0 12px 8px 0;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 10px 12px 10px 0;
+    border-top: 1px solid var(--border);
+    vertical-align: middle;
+  }
+
+  tbody tr {
+    transition: background-color var(--dur-fast);
+  }
+
+  tbody tr:hover {
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+// Segmented control (tabs and toggles)
+.segmented {
+  display: inline-flex;
+  padding: 4px;
+  gap: 2px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  max-width: 100%;
+  overflow-x: auto;
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 32px;
+    padding: 0 14px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color var(--dur), color var(--dur);
+
+    &:hover {
+      color: var(--text);
+    }
+
+    &.active {
+      background: linear-gradient(180deg, #7c5cf0, var(--purple-strong));
+      color: #fff;
+      box-shadow: 0 4px 14px -6px var(--purple-glow);
+    }
+  }
+}
+
+.page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 18px;
+
+  > div {
+    min-width: 0;
+  }
+
+  p {
+    margin-top: 4px;
+    color: var(--muted);
+  }
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.8125rem;
+
+  &:hover {
+    color: var(--text);
+    text-decoration: none;
+  }
+}
+
+// Skeletons: grey shapes that match the content they stand in for, shown while it loads.
+.skel {
+  display: block;
+  border-radius: 8px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.04) 20%, rgba(255, 255, 255, 0.09) 40%, rgba(255, 255, 255, 0.04) 60%);
+  background-size: 300% 100%;
+  animation: shimmer 1.3s linear infinite;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}
+
+// ---- Motion -------------------------------------------------------------------------------------
+// Used with Angular's animate.enter / animate.leave, which add these classes while an element enters or
+// leaves. A --i custom property staggers siblings.
+
+.rise {
+  animation: rise var(--dur-slow) var(--ease) both;
+  animation-delay: calc(var(--i, 0) * 45ms);
+}
+
+.pop {
+  animation: pop var(--dur) var(--ease) both;
+}
+
+.fade-in {
+  animation: fade-in var(--dur) var(--ease) both;
+}
+
+.fade-out {
+  animation: fade-in var(--dur-fast) ease-in reverse both;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.015);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-6px);
+  }
+  40% {
+    transform: translateX(5px);
+  }
+  60% {
+    transform: translateX(-3px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
+}
+
+// Page transitions (View Transitions API, through the router's withViewTransitions). The page's main
+// content fades and slides up; everything else, like the sidebar, is swapped instantly so it stays still.
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+
+.vt-page {
+  view-transition-name: page;
+}
+
+::view-transition-group(page) {
+  animation: none;
+}
+
+::view-transition-old(page) {
+  animation: fade-in 120ms ease-in reverse both;
+}
+
+::view-transition-new(page) {
+  animation: rise 220ms var(--ease) both;
+}
+
+// Respect the "reduce motion" setting: no non-essential movement.
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  ::view-transition-old(page),
+  ::view-transition-new(page) {
+    animation: none !important;
+  }
+
+  .lift:hover {
+    transform: none;
+  }
+}
+
+// Only for the camera starting up, where there is no content shape to stand in for.
+.spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--border-strong);
+  border-top-color: var(--purple-text);
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

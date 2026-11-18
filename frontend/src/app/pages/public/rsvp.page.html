@@ -1,0 +1,149 @@
+<main class="page vt-page">
+  <div class="sky" aria-hidden="true"><app-sparkle-field /></div>
+
+  @if (event.error()) {
+    <section class="hero">
+      <span class="pill">Checkpoint</span>
+      <h1>This link doesn't <span class="accent">work</span>.</h1>
+      <p class="sub">The event may have been removed. Check the link you were sent, or ask the organizers.</p>
+      <app-doodle name="search" class="hero-doodle" />
+    </section>
+  } @else if (event.value(); as e) {
+    @if (ticket(); as t) {
+      <section class="hero success">
+        <app-confetti />
+        <span class="pill"><span class="dot"></span>{{ e.clubName }}</span>
+        @if (t.status === 'CONFIRMED') {
+          <h1>You're <span class="accent">in</span>.</h1>
+          <p class="sub">See you at {{ e.title }}. We emailed your ticket to <strong>{{ t.attendeeEmail }}</strong>.</p>
+        } @else {
+          <h1>You're #<app-count-up [value]="t.waitlistPosition" [startAtValue]="true" /> on the <span class="accent">waitlist</span>.</h1>
+          <p class="sub">We'll email <strong>{{ t.attendeeEmail }}</strong> straight away if a seat opens up for you.</p>
+        }
+      </section>
+
+      <!-- A small ticket slides up into view. -->
+      <section class="mini-ticket" animate.enter="slide-up" aria-label="Your RSVP">
+        <div class="mini-top">
+          <span class="eyebrow">{{ t.status === 'CONFIRMED' ? 'Admit one' : 'Waitlist' }}</span>
+          <strong>{{ e.title }}</strong>
+          <span>{{ formatDate(e.startsAt) }} · {{ formatTimeRange(e.startsAt, e.endsAt) }}</span>
+        </div>
+        <div class="mini-bottom">
+          <div>
+            <span class="eyebrow">Name</span>
+            <strong>{{ t.attendeeName }}</strong>
+          </div>
+          @if (t.status === 'CONFIRMED') {
+            <span class="mini-tag">Confirmed</span>
+          } @else {
+            <span class="mini-tag wait">#{{ t.waitlistPosition }} in line</span>
+          }
+        </div>
+      </section>
+      <a class="btn btn-primary big" [routerLink]="['/t', t.manageToken]">View your ticket <app-icon class="arrow" name="arrow-right" [size]="18" /></a>
+    } @else {
+      <section class="hero">
+        <span class="pill"><span class="dot"></span>{{ e.clubName }} · {{ categoryLabel(e.category) }}</span>
+        <h1><app-accent-title [text]="e.title" /></h1>
+        <p class="sub facts">
+          <span><app-icon name="calendar" [size]="16" />{{ formatLongDate(e.startsAt) }}</span>
+          <span><app-icon name="clock" [size]="16" />{{ formatTimeRange(e.startsAt, e.endsAt) }}</span>
+          <span><app-icon name="pin" [size]="16" />{{ e.location }}</span>
+        </p>
+      </section>
+
+      <div class="horizon" aria-hidden="true"></div>
+
+      @if (!e.rsvpOpen) {
+        <div class="card notice">RSVPs are closed because the event has started.</div>
+      } @else {
+        <form class="card form" [formGroup]="form" (ngSubmit)="submit()" novalidate animate.enter="rise">
+          <div class="status" [class.full]="isFull()">
+            @if (isFull()) {
+              <app-icon name="hourglass" [size]="18" />
+              <span><strong>This event is full.</strong> RSVP to join the waitlist{{ e.waitlistLength > 0 ? ' (' + e.waitlistLength + ' waiting)' : '' }}.
+              You'll be moved in automatically if someone cancels.</span>
+            } @else {
+              <app-icon name="ticket" [size]="18" />
+              <span><strong>{{ e.spotsLeft }} {{ e.spotsLeft === 1 ? 'spot' : 'spots' }} left</strong> of {{ e.capacity }}.</span>
+            }
+          </div>
+
+          @if (error()) {
+            <p class="alert" role="alert">{{ error() }}</p>
+          }
+
+          <label class="field">
+            <span>Name</span>
+            <input class="input" formControlName="name" autocomplete="name" [class.invalid]="invalid('name')" />
+            @if (invalid('name')) { <span class="error">Please enter your name.</span> }
+          </label>
+          <label class="field">
+            <span>Email</span>
+            <input class="input" type="email" formControlName="email" autocomplete="email" inputmode="email"
+                   [class.invalid]="invalid('email') || !!serverErrors()['email']" />
+            <span class="hint">Your ticket is sent here.</span>
+            @if (invalid('email')) { <span class="error">Please enter a valid email.</span> }
+            @if (serverErrors()['email']) { <span class="error">{{ serverErrors()['email'] }}</span> }
+          </label>
+
+          <label class="check">
+            <input type="checkbox" formControlName="sponsorOptIn" />
+            <span>
+              <strong>Share my contact with sponsors</strong>
+              <small>Sponsors at this event can scan your ticket to save your name and email. Leave unticked and they see nothing.</small>
+            </span>
+          </label>
+
+          <label class="check">
+            <input type="checkbox" formControlName="linkCard" />
+            <span>
+              <strong>Link my student card for faster check-in</strong>
+              <small>Optional. We keep only a scrambled, one-way version of the card number (a hash), never the number itself.
+                You can ask an organizer to unlink it at any time.</small>
+            </span>
+          </label>
+
+          @if (form.controls.linkCard.value) {
+            <div class="field card-field" animate.enter="fade-in">
+              <label for="card">Student card number</label>
+              <div class="card-row">
+                <input id="card" class="input" formControlName="studentCardNumber" inputmode="numeric" autocomplete="off"
+                       placeholder="The number under the barcode" />
+                <button type="button" class="btn" (click)="scanningCard.set(!scanningCard())">
+                  <app-icon name="camera" [size]="17" />{{ scanningCard() ? 'Close' : 'Scan' }}
+                </button>
+              </div>
+              @if (serverErrors()['cardConsentGiven']) { <span class="error">{{ serverErrors()['cardConsentGiven'] }}</span> }
+              @if (scanningCard()) {
+                <app-barcode-scanner class="card-scanner" mode="card" (scanned)="onCardScanned($event)" />
+              }
+            </div>
+          }
+
+          <button class="btn btn-primary big" type="submit" [disabled]="submitting()">
+            {{ submitting() ? 'Sending…' : isFull() ? 'Join the waitlist' : 'RSVP' }}
+            @if (!submitting()) { <app-icon class="arrow" name="arrow-right" [size]="18" /> }
+          </button>
+        </form>
+      }
+
+      @if (e.description || e.sponsors.length > 0) {
+        <section class="about">
+          @if (e.description) {
+            <h2>About this <span class="accent">event</span></h2>
+            <p class="description">{{ e.description }}</p>
+          }
+          @if (e.sponsors.length > 0) {
+            <p class="sponsors">With thanks to {{ e.sponsors.join(', ') }}</p>
+          }
+        </section>
+      }
+    }
+  } @else {
+    <app-skeleton shape="hero" />
+    <app-skeleton shape="panel" />
+  }
+  <p class="footer">Powered by Checkpoint</p>
+</main>

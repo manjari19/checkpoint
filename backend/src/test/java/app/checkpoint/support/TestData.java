@@ -4,6 +4,7 @@ import app.checkpoint.club.Club;
 import app.checkpoint.club.ClubRepository;
 import app.checkpoint.common.SecureTokens;
 import app.checkpoint.event.Event;
+import app.checkpoint.event.EventCategory;
 import app.checkpoint.event.EventRepository;
 import app.checkpoint.member.Member;
 import app.checkpoint.member.MemberService;
@@ -76,7 +77,7 @@ public class TestData {
 
     private Event eventAt(CurrentOrganizer me, int capacity, Instant start) {
         return events.save(new Event(clubs.getReferenceById(me.clubId()), "Event " + shortId(), "",
-                "SFU Burnaby", start, start.plus(Duration.ofHours(3)), capacity));
+                "SFU Burnaby", start, start.plus(Duration.ofHours(3)), capacity, EventCategory.NETWORKING));
     }
 
     /**

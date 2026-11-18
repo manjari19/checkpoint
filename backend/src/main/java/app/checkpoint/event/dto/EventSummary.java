@@ -1,6 +1,7 @@
 package app.checkpoint.event.dto;
 
 import app.checkpoint.event.Event;
+import app.checkpoint.event.EventCategory;
 import app.checkpoint.event.RsvpCounts;
 import java.time.Instant;
 import java.util.UUID;
@@ -13,13 +14,14 @@ public record EventSummary(
         Instant startsAt,
         Instant endsAt,
         int capacity,
+        EventCategory category,
         long confirmed,
         long waitlisted,
         long checkedIn) {
 
     public static EventSummary of(Event event, RsvpCounts counts) {
         return new EventSummary(event.getId(), event.getTitle(), event.getLocation(), event.getStartsAt(),
-                event.getEndsAt(), event.getCapacity(),
+                event.getEndsAt(), event.getCapacity(), event.getCategory(),
                 counts == null ? 0 : counts.getConfirmed(),
                 counts == null ? 0 : counts.getWaitlisted(),
                 counts == null ? 0 : counts.getCheckedIn());

@@ -1,0 +1,45 @@
+<header class="topbar">
+  <a routerLink="/overview" class="brand"><span class="logo" aria-hidden="true"><app-icon name="check" [size]="16" /></span>Checkpoint</a>
+  <button type="button" class="icon-btn" (click)="menuOpen.set(!menuOpen())" [attr.aria-expanded]="menuOpen()"
+          aria-controls="sidebar" [attr.aria-label]="menuOpen() ? 'Close menu' : 'Open menu'">
+    <app-icon [name]="menuOpen() ? 'x' : 'menu'" />
+  </button>
+</header>
+
+@if (menuOpen()) {
+  <div class="scrim" (click)="menuOpen.set(false)" aria-hidden="true" animate.enter="fade-in" animate.leave="fade-out"></div>
+}
+
+<div class="rail">
+<nav id="sidebar" class="sidebar" [class.open]="menuOpen()" aria-label="Organizer">
+  <a routerLink="/overview" class="brand desktop-only"><span class="logo" aria-hidden="true"><app-icon name="check" [size]="16" /></span>Checkpoint</a>
+
+  @for (section of sections; track section.title) {
+    <div class="section">
+      <p class="eyebrow">{{ section.title }}</p>
+      @for (item of section.items; track item.path) {
+        <a [routerLink]="item.path" routerLinkActive="active" class="nav-link">
+          <app-icon [name]="item.icon" [size]="18" />{{ item.label }}
+        </a>
+      }
+    </div>
+  }
+
+  <div class="account">
+    @if (organizer(); as me) {
+      <app-avatar [name]="me.displayName" [size]="34" />
+    }
+    <div class="who">
+      <strong>{{ organizer()?.displayName }}</strong>
+      <span>{{ organizer()?.clubName }}</span>
+    </div>
+    <button type="button" class="icon-btn" (click)="logout()" aria-label="Log out" title="Log out">
+      <app-icon name="logout" [size]="17" />
+    </button>
+  </div>
+</nav>
+</div>
+
+<main class="content vt-page">
+  <router-outlet />
+</main>
