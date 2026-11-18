@@ -1,6 +1,5 @@
 package app.checkpoint.organizer;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
@@ -10,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import app.checkpoint.event.Event;
 import app.checkpoint.support.IntegrationTest;
 import app.checkpoint.support.TestData;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
@@ -48,7 +48,7 @@ class SecurityIntegrationTest extends IntegrationTest {
     @Test
     void loginWithTheRightPasswordStartsASession() throws Exception {
         CurrentOrganizer me = data.newClub();
-        MockHttpSession session = (MockHttpSession) mvc.perform(post("/api/auth/login").with(csrf())
+        MockHttpSession session = (MockHttpSession) mvc.perform(post("/api/auth/login").with(csrfToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"email\":\"%s\",\"password\":\"%s\"}".formatted(me.email(), TestData.PASSWORD)))
                 .andExpect(status().isOk())
@@ -64,7 +64,7 @@ class SecurityIntegrationTest extends IntegrationTest {
     @Test
     void loginWithAWrongPasswordIs401() throws Exception {
         CurrentOrganizer me = data.newClub();
-        mvc.perform(post("/api/auth/login").with(csrf())
+        mvc.perform(post("/api/auth/login").with(csrfToken())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"email\":\"%s\",\"password\":\"wrong\"}".formatted(me.email())))
                 .andExpect(status().isUnauthorized());
@@ -81,8 +81,18 @@ class SecurityIntegrationTest extends IntegrationTest {
 
     @Test
     void theCsrfCookieIsReadableBySinglePageApp() throws Exception {
-        mvc.perform(get("/api/auth/me"))
+        // The app's first request, before anyone logs in: it is refused, but still hands out the token.
+        Cookie xsrf = mvc.perform(get("/api/auth/me"))
+                .andExpect(status().isUnauthorized())
                 .andExpect(cookie().exists("XSRF-TOKEN"))
-                .andExpect(cookie().httpOnly("XSRF-TOKEN", false));
+                .andExpect(cookie().httpOnly("XSRF-TOKEN", false))
+                .andReturn().getResponse().getCookie("XSRF-TOKEN");
+
+        // Then, like Angular's HttpClient, send the cookie back with its value copied into the header.
+        CurrentOrganizer me = data.newClub();
+        mvc.perform(post("/api/auth/login").cookie(xsrf).header("X-XSRF-TOKEN", xsrf.getValue())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"%s\",\"password\":\"%s\"}".formatted(me.email(), TestData.PASSWORD)))
+                .andExpect(status().isOk());
     }
 }
