@@ -76,7 +76,8 @@
 @media (max-width: 640px) {
   .form {
     grid-template-columns: minmax(0, 1fr);
-    padding: 18px;
+    gap: 12px;
+    padding: 16px;
   }
 
   .buttons .btn {

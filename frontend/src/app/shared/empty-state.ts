@@ -13,7 +13,7 @@ import { Icon } from './icon';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, Icon, Doodle],
   template: `
-    <app-doodle [name]="art()" />
+    <app-doodle class="pop-in" [name]="art()" />
     <h3>{{ title() }}</h3>
     @if (message()) {
       <p>{{ message() }}</p>

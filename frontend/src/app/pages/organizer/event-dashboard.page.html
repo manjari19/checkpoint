@@ -26,9 +26,40 @@
     </div>
     <div class="actions">
       <a class="btn btn-primary" [routerLink]="['/events', e.id, 'check-in']"><app-icon name="scan" [size]="17" />Open check-in</a>
-      <a class="btn" [routerLink]="['/events', e.id, 'edit']"><app-icon name="edit" [size]="16" />Edit</a>
+      <a class="btn wide-only" [routerLink]="['/events', e.id, 'edit']"><app-icon name="edit" [size]="16" />Edit</a>
+      <button type="button" class="icon-btn phone-only" (click)="actionsOpen.set(true)" aria-label="More actions for this event">
+        <app-icon name="more" [size]="20" />
+      </button>
     </div>
   </header>
+
+  @if (actionsOpen()) {
+    <app-sheet [label]="e.title" (closed)="actionsOpen.set(false)" animate.enter="sheet-in" animate.leave="sheet-out">
+      <h2 class="sheet-title">{{ e.title }}</h2>
+      <ul class="sheet-menu">
+        <li><a [routerLink]="['/events', e.id, 'edit']"><span class="menu-icon"><app-icon name="edit" [size]="18" /></span>Edit event</a></li>
+        <li><button type="button" (click)="copyRsvpLink()"><span class="menu-icon"><app-icon name="copy" [size]="18" /></span>Copy RSVP link</button></li>
+        <li><a [routerLink]="['/e', e.id]" target="_blank"><span class="menu-icon"><app-icon name="link" [size]="18" /></span>Open the RSVP page</a></li>
+        <li><a [href]="exportUrls.attendees(e.id)" download (click)="actionsOpen.set(false); exported('the attendee list')">
+          <span class="menu-icon"><app-icon name="download" [size]="18" /></span>Export attendees (CSV)</a></li>
+        @if (e.sponsors.length > 0) {
+          <li><a [href]="exportUrls.sponsorContacts(e.id)" download (click)="actionsOpen.set(false); exported('sponsor contacts')">
+            <span class="menu-icon"><app-icon name="download" [size]="18" /></span>Export sponsor contacts (CSV)</a></li>
+        }
+      </ul>
+    </app-sheet>
+  }
+
+  @if (removing(); as r) {
+    <app-sheet [label]="'Remove ' + r.name" (closed)="removing.set(null)" animate.enter="sheet-in" animate.leave="sheet-out">
+      <h2 class="sheet-title">Remove {{ r.name }}?</h2>
+      <p class="muted">Their booth link stops working and the contacts they collected are deleted.</p>
+      <div class="sheet-actions">
+        <button type="button" class="btn" (click)="removing.set(null)">Keep them</button>
+        <button type="button" class="btn btn-danger" (click)="removeSponsor(r.id, r.name)">Remove</button>
+      </div>
+    </app-sheet>
+  }
 
   @if (actionError()) {
     <p class="alert" role="alert">{{ actionError() }}</p>
@@ -167,7 +198,7 @@
               </div>
               <div class="sponsor-actions">
                 <app-copy-button [text]="boothLink(s.boothCode)" label="Booth link" [ariaLabel]="'Copy booth link for ' + s.name" />
-                <button type="button" class="icon-btn" (click)="removeSponsor(s.id, s.name)" [attr.aria-label]="'Remove ' + s.name">
+                <button type="button" class="icon-btn" (click)="removing.set({ id: s.id, name: s.name })" [attr.aria-label]="'Remove ' + s.name">
                   <app-icon name="trash" [size]="16" />
                 </button>
               </div>

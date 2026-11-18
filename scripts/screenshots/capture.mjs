@@ -49,9 +49,13 @@ const problems = [];
 
 for (const { name, path, auth } of PAGES) {
   for (const width of WIDTHS) {
+    // Phone widths are emulated as a phone: touch input, mobile viewport rules and a high-density screen.
+    const phone = width <= 430;
     const context = await browser.newContext({
-      viewport: { width, height: width === 390 ? 844 : 900 },
-      deviceScaleFactor: width === 390 ? 2 : 1,
+      viewport: { width, height: phone ? Math.round(width * 2.16) : 900 },
+      deviceScaleFactor: phone ? 2 : 1,
+      isMobile: phone,
+      hasTouch: phone,
       storageState: auth ? state : undefined,
       permissions: ['camera'],
       // Show times the way the club sees them.

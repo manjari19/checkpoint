@@ -10,6 +10,7 @@ import { CountUp } from '../../shared/count-up';
 import { Doodle } from '../../shared/doodle';
 import { Icon } from '../../shared/icon';
 import { QrCode } from '../../shared/qr-code';
+import { Sheet } from '../../shared/sheet';
 import { Skeleton } from '../../shared/skeleton';
 
 /** How often an open ticket page checks for news (checked in at the door, or moved up the waitlist). */
@@ -21,7 +22,7 @@ const MAX_TILT = 5;
 @Component({
   selector: 'app-ticket-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, QrCode, AccentTitle, CountUp, Doodle, Icon, Skeleton],
+  imports: [RouterLink, QrCode, AccentTitle, CountUp, Doodle, Icon, Skeleton, Sheet],
   templateUrl: './ticket.page.html',
   styleUrl: './ticket.page.scss',
 })

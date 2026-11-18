@@ -18,8 +18,8 @@
 
 @if (summary.value(); as s) {
   <section class="kpis" aria-label="Term summary">
-    <app-kpi-card animate.enter="rise" style="--i: 0" label="Unique attendees" [value]="s.uniqueAttendees" icon="users" tint="purple" [note]="s.termLabel" />
-    <app-kpi-card animate.enter="rise" style="--i: 1" label="Total check-ins" [value]="s.totalCheckIns" icon="user-check" tint="green" note="Across all events" />
+    <app-kpi-card animate.enter="rise" style="--i: 0" label="Attendees" [value]="s.uniqueAttendees" icon="users" tint="purple" [note]="'Different people, ' + s.termLabel" />
+    <app-kpi-card animate.enter="rise" style="--i: 1" label="Check-ins" [value]="s.totalCheckIns" icon="user-check" tint="green" note="Across all events" />
     <app-kpi-card animate.enter="rise" style="--i: 2" label="Events" [value]="s.eventCount" icon="calendar" tint="blue" [note]="s.termLabel" />
   </section>
 

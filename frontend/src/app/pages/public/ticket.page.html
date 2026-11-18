@@ -8,7 +8,7 @@
     </section>
   } @else if (ticket.value(); as t) {
     <header class="intro">
-      <app-doodle [name]="t.status === 'WAITLISTED' ? 'calendar' : t.checkedInAt ? 'people' : 'door'" />
+      <app-doodle class="pop-in" [name]="t.status === 'WAITLISTED' ? 'calendar' : t.checkedInAt ? 'people' : 'door'" />
       @switch (t.status) {
         @case ('CONFIRMED') {
           @if (t.checkedInAt) {
@@ -82,22 +82,21 @@
     }
 
     @if (t.cancellable) {
-      @if (!confirming()) {
-        <button type="button" class="btn btn-block" (click)="confirming.set(true)">Can't make it? Cancel RSVP</button>
-      } @else {
-        <section class="card confirm" role="alertdialog" aria-labelledby="confirm-title" animate.enter="pop">
-          <h2 id="confirm-title">Cancel your RSVP?</h2>
+      <button type="button" class="btn btn-block" (click)="confirming.set(true)">Can't make it? Cancel RSVP</button>
+      @if (confirming()) {
+        <app-sheet label="Cancel your RSVP?" (closed)="cancelling() || confirming.set(false)" animate.enter="sheet-in" animate.leave="sheet-out">
+          <h2 class="sheet-title">Cancel your <span class="accent">RSVP</span>?</h2>
           <p class="muted">
             @if (t.status === 'CONFIRMED') { Your seat goes to the next person on the waitlist. You can't undo this, but you can RSVP again if there's room. }
             @else { You'll leave the waitlist. }
           </p>
-          <div class="confirm-buttons">
+          <div class="sheet-actions">
             <button type="button" class="btn" (click)="confirming.set(false)" [disabled]="cancelling()">Keep my spot</button>
             <button type="button" class="btn btn-danger" (click)="cancel()" [disabled]="cancelling()">
               {{ cancelling() ? 'Cancelling…' : 'Yes, cancel' }}
             </button>
           </div>
-        </section>
+        </app-sheet>
       }
     }
     @if (t.status === 'CANCELLED') {

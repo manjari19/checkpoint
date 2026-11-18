@@ -10,6 +10,7 @@ import { Toasts } from '../../core/toast';
 import { Avatar } from '../../shared/avatar';
 import { Icon } from '../../shared/icon';
 import { KpiCard } from '../../shared/kpi-card';
+import { Sheet } from '../../shared/sheet';
 import { Skeleton } from '../../shared/skeleton';
 
 const OUTCOMES: Record<HistoryOutcome, { label: string; tone: string }> = {
@@ -23,7 +24,7 @@ const OUTCOMES: Record<HistoryOutcome, { label: string; tone: string }> = {
 @Component({
   selector: 'app-member-detail-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, Icon, EmptyState, KpiCard, Skeleton, Avatar],
+  imports: [RouterLink, Icon, EmptyState, KpiCard, Skeleton, Avatar, Sheet],
   template: `
     <a class="back" routerLink="/members"><app-icon name="arrow-left" [size]="16" />All members</a>
 
@@ -39,9 +40,19 @@ const OUTCOMES: Record<HistoryOutcome, { label: string; tone: string }> = {
           </div>
         </div>
         @if (m.cardLinked) {
-          <button type="button" class="btn btn-danger" (click)="unlink()"><app-icon name="card" [size]="16" />Unlink student card</button>
+          <button type="button" class="btn btn-danger" (click)="confirmingUnlink.set(true)"><app-icon name="card" [size]="16" />Unlink student card</button>
         }
       </header>
+      @if (confirmingUnlink()) {
+        <app-sheet label="Unlink student card" (closed)="confirmingUnlink.set(false)" animate.enter="sheet-in" animate.leave="sheet-out">
+          <h2 class="sheet-title">Unlink this student card?</h2>
+          <p class="muted">{{ m.name }} can link a card again on their next RSVP.</p>
+          <div class="sheet-actions">
+            <button type="button" class="btn" (click)="confirmingUnlink.set(false)">Keep it</button>
+            <button type="button" class="btn btn-danger" (click)="unlink()">Unlink</button>
+          </div>
+        </app-sheet>
+      }
       @if (error()) { <p class="alert" role="alert">{{ error() }}</p> }
 
       <section class="kpis">
@@ -103,12 +114,13 @@ export class MemberDetailPage {
 
   protected readonly member = rxResource({ params: () => this.memberId(), stream: ({ params }) => this.api.member(params) });
   protected readonly error = signal('');
+  protected readonly confirmingUnlink = signal(false);
   protected readonly outcomes = OUTCOMES;
   protected readonly formatDate = formatDate;
   protected readonly formatTime = formatTime;
 
   protected async unlink(): Promise<void> {
-    if (!confirm('Unlink this student card? The member can link a card again on their next RSVP.')) return;
+    this.confirmingUnlink.set(false);
     try {
       await firstValueFrom(this.api.unlinkCard(this.memberId()));
       this.member.reload();

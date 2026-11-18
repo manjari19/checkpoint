@@ -120,8 +120,7 @@
 
 .actions {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
   margin-top: 2px;
 
   .btn {
@@ -227,10 +226,20 @@
     gap: 10px;
   }
 
-  .stat-chips li {
-    height: 30px;
-    padding: 0 11px;
-    font-size: 0.75rem;
+  // Stat chips sit in one row you can swipe, instead of stacking.
+  .stat-chips {
+    flex-wrap: nowrap;
+    margin-right: -16px;
+    padding-right: 16px;
+    overflow-x: auto;
+    scrollbar-width: none;
+
+    li {
+      flex: none;
+      height: 30px;
+      padding: 0 11px;
+      font-size: 0.75rem;
+    }
   }
 
   .greeting {

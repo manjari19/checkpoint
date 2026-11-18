@@ -65,11 +65,11 @@ const TINT_COLORS: Record<KpiTint, string> = {
         var(--surface);
       transition: transform var(--dur) var(--ease), border-color var(--dur), box-shadow var(--dur);
     }
-    :host(:hover) {
+    @media (hover: hover) { :host(:hover) {
       transform: translateY(-2px);
       border-color: color-mix(in srgb, var(--tint) 45%, transparent);
       box-shadow: var(--highlight), 0 12px 30px -16px var(--tint);
-    }
+    } }
     .head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
     .label { font-family: var(--font-serif); font-size: 0.95rem; font-weight: 520; }
     .icon-chip {
@@ -88,6 +88,15 @@ const TINT_COLORS: Record<KpiTint, string> = {
       transform-origin: left; animation: fill var(--dur-slow) var(--ease) backwards; }
     @keyframes fill { from { transform: scaleX(0); } }
     :host(.no-footer) { padding-bottom: 16px; }
+    @media (max-width: 640px) {
+      :host { padding: 14px 14px 0; }
+      :host(.no-footer) { padding-bottom: 14px; }
+      .label { font-size: 0.86rem; }
+      .icon-chip { width: 26px; height: 26px; }
+      .value { font-size: 1.45rem; }
+      .spark { margin: 4px -14px 0; height: 38px; }
+      .meter { margin-bottom: 14px; }
+    }
     @media (prefers-reduced-motion: reduce) { :host(:hover) { transform: none; } }
   `,
 })

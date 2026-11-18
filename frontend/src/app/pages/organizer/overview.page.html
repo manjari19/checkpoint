@@ -48,7 +48,7 @@
       </div>
       <div class="actions">
         <a class="btn btn-primary" [routerLink]="['/events', next.id, 'check-in']"><app-icon name="scan" [size]="17" />Open check-in</a>
-        <a class="btn" [routerLink]="['/events', next.id]">View event <app-icon class="arrow" name="arrow-right" [size]="16" /></a>
+        <a class="btn-round" [routerLink]="['/events', next.id]" aria-label="View event" title="View event"><app-icon name="arrow-right" [size]="18" /></a>
       </div>
     } @else {
       <app-empty-state title="Nothing planned" art="calendar" actionLabel="New event" link="/events/new" />

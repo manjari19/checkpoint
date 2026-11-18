@@ -136,8 +136,11 @@
 }
 
 @media (max-width: 1023px) {
+  // Two rows, top bar and page. Without align-content the rows stretch to fill the screen on short
+  // pages, which pushed the page down below an empty gap.
   :host {
     grid-template-columns: minmax(0, 1fr);
+    align-content: start;
   }
 
   .desktop-only {

@@ -297,22 +297,6 @@
   transform: rotate(-6deg);
 }
 
-.confirm {
-  display: grid;
-  gap: 8px;
-}
-
-.confirm-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 6px;
-
-  .btn {
-    flex: 1 1 140px;
-  }
-}
-
 .missing {
   display: grid;
   justify-items: center;

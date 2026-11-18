@@ -310,3 +310,24 @@
     padding: 16px;
   }
 }
+
+.phone-only {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .wide-only {
+    display: none;
+  }
+
+  .phone-only {
+    display: inline-grid;
+    width: 44px;
+    height: 44px;
+  }
+
+  .actions {
+    flex-wrap: nowrap;
+    width: 100%;
+  }
+}

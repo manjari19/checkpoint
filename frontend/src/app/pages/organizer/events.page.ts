@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, computed, effect, inject, signal, untracked, viewChild } from '@angular/core';
+import { prefersReducedMotion } from '../../core/motion';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { Api } from '../../core/api';
@@ -15,12 +16,12 @@ type Tab = 'upcoming' | 'past';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, Icon, EventCard, EmptyState, Skeleton],
   template: `
-    <header class="page-header">
-      <div>
+    <header class="head">
+      <div class="title-row">
         <h1>Events</h1>
-        <p>Create events, share the RSVP link, and run check-in on the night.</p>
+        <a class="btn btn-primary new" routerLink="/events/new"><app-icon name="plus" [size]="17" />New event</a>
       </div>
-      <a class="btn btn-primary" routerLink="/events/new"><app-icon name="plus" [size]="17" />New event</a>
+      <p>Create events, share the RSVP link, and run check-in on the night.</p>
     </header>
 
     <div class="filters">
@@ -57,11 +58,28 @@ type Tab = 'upcoming' | 'past';
         }
       </div>
     } @else {
-      <div class="grid">
+      <!-- A grid on wide screens; on phones a swipeable carousel with the next card peeking in. -->
+      <div class="grid" #track (scroll)="onScroll()" aria-roledescription="carousel" aria-label="Events">
         @for (event of shown(); track event.id; let i = $index) {
-          <app-event-card [event]="event" animate.enter="rise" [style.--i]="i" />
+          <app-event-card [event]="event" animate.enter="rise" [style.--i]="i"
+                          [class.before]="i < active()" [class.after]="i > active()" />
         }
       </div>
+      @if (shown().length > 1) {
+        <div class="pager">
+          <div class="dots">
+            @for (event of shown(); track event.id; let i = $index) {
+              <button type="button" class="dot" [class.on]="i === active()" (click)="goTo(i)"
+                      [attr.aria-label]="'Show ' + event.title + ', ' + (i + 1) + ' of ' + shown().length"
+                      [attr.aria-current]="i === active() ? 'true' : null"></button>
+            }
+          </div>
+          <button type="button" class="btn-round" (click)="goTo((active() + 1) % shown().length)"
+                  [attr.aria-label]="active() === shown().length - 1 ? 'Back to the first event' : 'Next event'">
+            <app-icon name="arrow-right" [size]="18" />
+          </button>
+        </div>
+      }
     }
   `,
   styles: `
@@ -73,8 +91,40 @@ type Tab = 'upcoming' | 'past';
       transition: background-color var(--dur-fast), color var(--dur-fast), border-color var(--dur-fast); }
     .cat:hover { color: var(--text); border-color: rgba(255, 255, 255, 0.26); }
     .cat.on { background: var(--purple-soft); border-color: rgba(139, 92, 246, 0.5); color: var(--purple-text); }
+    .head { margin-bottom: 18px; }
+    .title-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+    .head p { margin-top: 4px; color: var(--muted); }
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap: 16px; }
+    .pager { display: none; }
     .empty { max-width: 560px; }
+
+    // Phones: one card at a time, swiped sideways, snapping into place. Cards either side shrink a little
+    // and fan out, like a stack of cards.
+    @media (max-width: 640px) {
+      .head { margin-bottom: 14px; }
+      .head h1 { font-size: 1.55rem; }
+      .head p { font-size: 0.8125rem; }
+      .head .new { min-height: 38px; padding: 0 14px; }
+      .grid {
+        display: flex; gap: 12px; margin: 0 -16px; padding: 6px 44px 20px; overflow-x: auto;
+        scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none;
+      }
+      .grid::-webkit-scrollbar { display: none; }
+      .grid app-event-card {
+        flex: 0 0 calc(100vw - 88px); scroll-snap-align: center; transform-origin: 50% 100%;
+        transition: transform 340ms var(--spring), opacity 250ms ease;
+      }
+      .grid app-event-card.before { transform: scale(0.92) rotate(-2deg); opacity: 0.75; }
+      .grid app-event-card.after { transform: scale(0.92) rotate(2deg); opacity: 0.75; }
+      .pager { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 2px; }
+      .dots { display: flex; gap: 6px; flex-wrap: wrap; }
+      .dot { width: 8px; height: 8px; padding: 0; border: 0; border-radius: 4px; background: rgba(255, 255, 255, 0.22);
+        cursor: pointer; transition: width 300ms var(--spring), background-color 200ms; }
+      .dot.on { width: 24px; background: var(--purple-text); }
+      // Bigger invisible tap target around each small dot.
+      .dot { position: relative; }
+      .dot::after { content: ''; position: absolute; inset: -10px -4px; }
+    }
   `,
 })
 export class EventsPage {
@@ -104,4 +154,42 @@ export class EventsPage {
     const category = this.category();
     return category === null ? list : list.filter((e) => e.category === category);
   });
+
+  /** On phones, the card in the middle of the carousel. */
+  protected readonly active = signal(0);
+  private readonly track = viewChild<ElementRef<HTMLElement>>('track');
+
+  constructor() {
+    // A new tab or category starts the carousel from the first card again.
+    effect(() => {
+      this.shown();
+      untracked(() => {
+        this.active.set(0);
+        this.track()?.nativeElement.scrollTo({ left: 0 });
+      });
+    });
+  }
+
+  protected onScroll(): void {
+    const track = this.track()?.nativeElement;
+    const first = track?.children[0] as HTMLElement | undefined;
+    if (!track || !first) return;
+    this.active.set(carouselIndex(track.scrollLeft, first.offsetWidth, 12, track.children.length));
+  }
+
+  protected goTo(index: number): void {
+    const track = this.track()?.nativeElement;
+    const card = track?.children[index] as HTMLElement | undefined;
+    if (!track || !card) return;
+    track.scrollTo({
+      left: card.offsetLeft - (track.clientWidth - card.offsetWidth) / 2,
+      behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+    });
+  }
+}
+
+/** Which card is centered in a snap carousel, given how far it has scrolled. */
+export function carouselIndex(scrollLeft: number, cardWidth: number, gap: number, count: number): number {
+  if (count === 0 || cardWidth <= 0) return 0;
+  return Math.min(count - 1, Math.max(0, Math.round(scrollLeft / (cardWidth + gap))));
 }

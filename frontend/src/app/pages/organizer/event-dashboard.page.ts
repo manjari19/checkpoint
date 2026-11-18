@@ -14,6 +14,7 @@ import { EmptyState } from '../../shared/empty-state';
 import { eventStatus } from '../../shared/event-card';
 import { Icon } from '../../shared/icon';
 import { KpiCard } from '../../shared/kpi-card';
+import { Sheet } from '../../shared/sheet';
 import { Skeleton } from '../../shared/skeleton';
 
 type Filter = 'all' | RsvpStatus;
@@ -29,7 +30,7 @@ export function filterAttendees(rows: AttendeeRow[], filter: Filter, search: str
 @Component({
   selector: 'app-event-dashboard-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, Icon, DateBlock, BarChart, EmptyState, CopyButton, KpiCard, Skeleton, Avatar],
+  imports: [RouterLink, Icon, DateBlock, BarChart, EmptyState, CopyButton, KpiCard, Skeleton, Avatar, Sheet],
   templateUrl: './event-dashboard.page.html',
   styleUrl: './event-dashboard.page.scss',
 })
@@ -48,6 +49,10 @@ export class EventDashboardPage {
   protected readonly checkingIn = signal<string | null>(null);
   protected readonly sponsorName = signal('');
   protected readonly actionError = signal('');
+  /** Phones: the sheet with the event's other actions. */
+  protected readonly actionsOpen = signal(false);
+  /** The sponsor waiting for "are you sure?" before being removed. */
+  protected readonly removing = signal<{ id: string; name: string } | null>(null);
 
   protected readonly filters: { value: Filter; label: string }[] = [
     { value: 'all', label: 'All' },
@@ -122,8 +127,18 @@ export class EventDashboardPage {
     }
   }
 
+  protected async copyRsvpLink(): Promise<void> {
+    this.actionsOpen.set(false);
+    try {
+      await navigator.clipboard.writeText(this.rsvpLink());
+      this.toasts.show('RSVP link copied');
+    } catch {
+      window.prompt('Copy this link:', this.rsvpLink());
+    }
+  }
+
   protected async removeSponsor(sponsorId: string, name: string): Promise<void> {
-    if (!confirm(`Remove ${name}? Their booth link stops working and the contacts they collected are deleted.`)) return;
+    this.removing.set(null);
     this.actionError.set('');
     try {
       await firstValueFrom(this.api.removeSponsor(this.eventId(), sponsorId));

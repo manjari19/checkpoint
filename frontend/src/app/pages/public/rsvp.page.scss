@@ -336,12 +336,76 @@
   color: var(--subtle);
 }
 
-@media (max-width: 480px) {
+// Step dots: the RSVP feels like two steps, details then ticket.
+.steps {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.step {
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  transition: width 300ms var(--spring), background-color 200ms;
+
+  &.on {
+    width: 22px;
+    background: var(--purple-text);
+  }
+
+  &.done {
+    background: var(--purple-text);
+  }
+}
+
+.step-label {
+  margin-left: 4px;
+}
+
+.success .steps {
+  justify-content: center;
+}
+
+@media (max-width: 640px) {
+  // A shorter hero so the form starts higher on the first screen.
   .hero {
-    padding-top: 40px;
+    gap: 10px;
+    padding-top: 30px;
+
+    h1 {
+      font-size: clamp(2rem, 1.2rem + 5vw, 2.4rem);
+    }
+  }
+
+  .sub {
+    font-size: 0.875rem;
   }
 
   .form {
+    gap: 14px;
     padding: 18px 16px;
+  }
+
+  .big {
+    min-height: 48px;
+  }
+
+  // The ticket rises from the bottom of the screen, like the next step of the flow.
+  .slide-up {
+    animation: slide-up-far 380ms var(--spring-soft) 80ms both;
+  }
+
+  @keyframes slide-up-far {
+    from {
+      opacity: 0;
+      transform: translateY(70vh) rotate(-3deg);
+    }
+    40% {
+      opacity: 1;
+    }
   }
 }

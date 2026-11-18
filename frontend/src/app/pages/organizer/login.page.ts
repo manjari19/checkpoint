@@ -17,7 +17,7 @@ import { Icon } from '../../shared/icon';
         <aside class="art">
           <app-sparkle-field />
           <div class="brand"><span class="logo" aria-hidden="true"><app-icon name="check" [size]="16" /></span>Checkpoint</div>
-          <app-doodle name="door" class="door" />
+          <app-doodle name="door" class="door pop-in" />
           <p class="tagline">RSVPs, waitlists and check-in for student clubs. <span class="accent">See you at the door.</span></p>
         </aside>
 
@@ -67,7 +67,8 @@ import { Icon } from '../../shared/icon';
       .art { border-right: 0; border-bottom: 1px solid var(--border); grid-template-columns: 1fr auto; align-items: center; padding: 18px 20px; }
       .door { --doodle-width: 84px; grid-row: 1 / span 2; grid-column: 2; }
       .tagline { font-size: 0.8125rem; }
-      form { padding: 24px 20px 26px; }
+      form { gap: 12px; padding: 22px 18px 24px; }
+      h1 { font-size: 1.8rem; }
     }
   `,
 })

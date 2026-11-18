@@ -173,6 +173,6 @@ export class SparkleField {
     // Kept to the edges, so no dot ever sits next to a word and looks like punctuation.
     [3, 18, 3, ''], [5, 70, 2, ''], [22, 4, 2, 'gold'], [7, 96, 3, ''], [48, 3, 2, ''],
     [84, 94, 2, 'coral'], [74, 5, 3, ''], [95, 78, 2, ''], [94, 40, 9, 'plus'], [97, 52, 3, ''],
-    [2, 42, 10, 'ring'], [97, 8, 2, 'gold'],
+    [90, 2, 10, 'ring'], [97, 8, 2, 'gold'],
   ];
 }
